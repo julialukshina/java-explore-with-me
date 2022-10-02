@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.services.events;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.enums.State;
@@ -30,16 +31,19 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final EventStorage storage;
     private final UserRepository userRepository;
     private final StateEnumConverter converter;
+    private final Statistics statistics;
 
 
     @Autowired
-    public EventAdminServiceImpl(EventRepository eventRepository,
-                                 CategoryRepository categoryRepository, EventStorage storage, UserRepository userRepository, StateEnumConverter converter) {
+    public EventAdminServiceImpl(EventRepository eventRepository, CategoryRepository categoryRepository,
+                                 EventStorage storage, UserRepository userRepository, StateEnumConverter converter,
+                                 Statistics statistics) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.storage = storage;
         this.userRepository = userRepository;
         this.converter = converter;
+        this.statistics = statistics;
     }
 
     // TODO: 27.09.2022 прописать метод
@@ -118,12 +122,12 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         String sqlQuery = String.valueOf(sb);
 
-        // TODO: 01.10.2022 добавить к ивентам просмотры
+        return statistics.getListEventFullDtoWithViews(storage.getEvents(sqlQuery));
 
-
-        return storage.getEvents(sqlQuery).stream()
-                .map(EventFullMapper::toEventFullDto)
-                .collect(Collectors.toList());
+//
+//        return storage.getEvents(sqlQuery).stream()
+//                .map(EventFullMapper::toEventFullDto)
+//                .collect(Collectors.toList());
 
     }
 
@@ -158,8 +162,8 @@ public class EventAdminServiceImpl implements EventAdminService {
             event.setTitle(updateEventRequest.getTitle());
         }
 
-        // TODO: 27.09.2022 добавить к событию просмотры
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return statistics.getEventFullDtoWithViews(EventFullMapper.toEventFullDto(eventRepository.save(event)));
+//        return EventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
@@ -173,6 +177,9 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new MyValidationException("Обновлено может быть только событие, до наступления которого осталось больше часа");
         }
         event.setState(State.PUBLISHED);
+
+        // TODO: 02.10.2022 нужно ли здесь добавлять просмотры?
+
         return EventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
@@ -184,6 +191,9 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new MyValidationException("Опубликованные события не могут быть отклонены");
         }
         event.setState(State.REJECTED);
+
+        // TODO: 02.10.2022 нужно ли здесь добавлять просмотры?
+
         return EventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 

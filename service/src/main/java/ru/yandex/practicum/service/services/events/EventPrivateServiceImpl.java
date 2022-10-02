@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.MyPageable;
+import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.ParticipationRequestDto;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
@@ -37,16 +38,19 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+
+    private final Statistics statistics;
     @Lazy
     @Autowired
     RequestMapper requestMapper;
 
     @Autowired
-    public EventPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository) {
+    public EventPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository, Statistics statistics) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.requestRepository = requestRepository;
+        this.statistics = statistics;
     }
 
     @Override
@@ -54,11 +58,11 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         userValidation(userId);
         Pageable pageable = MyPageable.of(from, size);
 
-        // TODO: 26.09.2022 включить в ивенты статистику
+        return statistics.getListEventShortDtoWithViews((List<Event>) eventRepository.findByInitiator(userId, pageable));
 
-        return eventRepository.findByInitiator(userId, pageable).stream()
-                .map(EventShortMapper::toEventShortDto)
-                .collect(Collectors.toList());
+//        return eventRepository.findByInitiator(userId, pageable).stream()
+//                .map(EventShortMapper::toEventShortDto)
+//                .collect(Collectors.toList());
     }
 
     @Override
@@ -112,7 +116,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
             event.setState(State.PENDING);
         }
 
-        // TODO: 27.09.2022 добавить к событию просмотры
+        // TODO: 02.10.2022 нужны ли здесь просмотры?
+
         return EventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
@@ -122,8 +127,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        // TODO: 27.09.2022 добавить к событию просмотры
-        return EventFullMapper.toEventFullDto(event);
+        return statistics.getEventFullDtoWithViews(EventFullMapper.toEventFullDto(event));
+//        return EventFullMapper.toEventFullDto(event);
     }
 
     @Override

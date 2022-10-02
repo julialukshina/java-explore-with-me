@@ -3,8 +3,11 @@ package ru.yandex.practicum.service.services.events;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.service.Statistics;
+import ru.yandex.practicum.service.clients.HitClient;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
+import ru.yandex.practicum.service.dto.statistics.ViewStats;
 import ru.yandex.practicum.service.enums.Sort;
 import ru.yandex.practicum.service.enums.State;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
@@ -18,7 +21,8 @@ import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.EventStorage;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,14 +32,21 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventStorage storage;
 
     private final CategoryRepository categoryRepository;
+    private final HitClient hitClient;
+    private final Statistics statistics;
+//    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+//    private final String startStat = LocalDateTime.now().minusDays(30).format(formatter);
+//    private final String endStat = LocalDateTime.now().plusDays(30).format(formatter);
 //    @Autowired
 //    private Session session;
 
     @Autowired
-    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository) {
+    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, HitClient hitClient, Statistics statistics) {
         this.repository = repository;
         this.storage = storage;
         this.categoryRepository = categoryRepository;
+        this.hitClient = hitClient;
+        this.statistics = statistics;
     }
 
 //    @Override
@@ -377,7 +388,10 @@ public class EventPublicServiceImpl implements EventPublicService {
 //
 //        Query<Event> query = session.createQuery(cr);
 //        List<Event> results = query.getResultList();
-
+List<EventShortDto> eventDtos = new ArrayList<>();
+List<String> uris = new ArrayList<>();
+List<ViewStats> views = new ArrayList<>();
+Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         LocalDateTime start = null;
         LocalDateTime end = null;
                 if(rangeStart != null) {
@@ -438,17 +452,34 @@ public class EventPublicServiceImpl implements EventPublicService {
            sb.delete(i, i+3);
        }
         String sqlQuery = String.valueOf(sb);
-   if(sort.equals(Sort.EVENT_DATE)){
-       storage.getEvents(sqlQuery);
-
-       // TODO: 29.09.2022 отсортировать по просмотрам
-
-       return  null;
+//
+//        eventDtos = storage.getEvents(sqlQuery).stream()
+//                .map(EventShortMapper::toEventShortDto)
+//                .collect(Collectors.toList());
+//        for (EventShortDto dto:
+//                eventDtos) {
+//            StringBuilder stringBuilder=new StringBuilder();
+//            stringBuilder.append("http://localhost:8080/events/"+dto.getId());
+//            uris.add(String.valueOf(stringBuilder));
+//            uriEventDtos.put(String.valueOf(stringBuilder), dto);
+//        }
+//        eventDtos.clear();
+//        views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false);
+//        for (ViewStats view:
+//             views) {
+//            EventShortDto dto = uriEventDtos.get(view.getUri());
+//            dto.setViews(view.getHits());
+//            eventDtos.add(dto);
+//        }
+   if(sort.equals(Sort.VIEWS)){
+       statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery)).stream()
+               .sorted(Comparator.comparing(o->o.getViews()))
+               .skip(from)
+               .limit(size)
+               .collect(Collectors.toList());
    }
 
-        return storage.getEvents(sqlQuery).stream()
-                .map(EventShortMapper::toEventShortDto)
-                .collect(Collectors.toList());
+        return statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery));
     }
 
     @Override
@@ -458,10 +489,12 @@ public class EventPublicServiceImpl implements EventPublicService {
         if (!dto.getState().equals(State.PUBLISHED)) {
             throw new MyValidationException("Только опубликованные события могут быть просмотрены");
         }
-
-        // TODO: 26.09.2022 добавить в dto просмотры
-
-        return dto;
+//        String uri = "http://localhost:8080/events/"+dto.getId();
+//        List <String> uris = new ArrayList<>();
+//        uris.add(uri);
+//        List <ViewStats> views = (List<ViewStats>)hitClient.getStats(startStat, endStat, uris, false);
+//        dto.setViews(views.get(0).getHits());
+        return statistics.getEventFullDtoWithViews(dto);
     }
 
 

@@ -3,31 +3,34 @@ package ru.yandex.practicum.service.mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
 import ru.yandex.practicum.service.mappers.events.EventShortMapper;
 import ru.yandex.practicum.service.models.Compilation;
+import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.services.events.EventPublicService;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Lazy
 @Component
 public class CompilationMapper {
     private final EventPublicService service;
+    private final Statistics statistics;
 
     @Autowired
-    public CompilationMapper(EventPublicService service) {
+    public CompilationMapper(EventPublicService service, Statistics statistics) {
         this.service = service;
+        this.statistics = statistics;
     }
 
-    // TODO: 22.09.2022 написать мапер после того, как будет готов сервис ивентов
 
     public CompilationDto toCompilationDto(Compilation compilation) {
+        List<Event> events = (List<Event>) compilation.getEvents();
         return new CompilationDto(compilation.getId(),
-                compilation.getEvents().stream()
-                        .map(event -> EventShortMapper.toEventShortDto(event))
-                        .collect(Collectors.toList()),
+                statistics.getListEventShortDtoWithViews(events),
                 compilation.isPinned(),
                 compilation.getTitle());
     }

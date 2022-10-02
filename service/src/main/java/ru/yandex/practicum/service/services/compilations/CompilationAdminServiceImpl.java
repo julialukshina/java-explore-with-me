@@ -4,8 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
+import ru.yandex.practicum.service.dto.events.EventShortDto;
+import ru.yandex.practicum.service.dto.statistics.ViewStats;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
 import ru.yandex.practicum.service.mappers.CompilationMapper;
 import ru.yandex.practicum.service.models.Compilation;
@@ -13,7 +16,7 @@ import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.repositories.CompilationRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -23,7 +26,6 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     private final CompilationRepository compilationRepository;
     @Lazy
     private final CompilationMapper compilationMapper;
-
     @Autowired
     public CompilationAdminServiceImpl(EventRepository eventRepository,
                                        CompilationRepository compilationRepository,
@@ -39,7 +41,9 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
                 dto.getEvents()) {
             eventValidation(id);
         }
-        return compilationMapper.toCompilationDto(compilationRepository.save(compilationMapper.toCompilationFromNew(dto)));
+        CompilationDto compilationDto = compilationMapper.toCompilationDto(compilationRepository.save(compilationMapper.toCompilationFromNew(dto)));
+
+        return compilationDto;
     }
 
     @Override

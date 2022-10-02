@@ -34,7 +34,8 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     RequestMapper requestMapper;
 
     @Autowired
-    public RequestPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository) {
+    public RequestPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository,
+                                     CategoryRepository categoryRepository, RequestRepository requestRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;

@@ -24,7 +24,7 @@ public class StatisticsController {
         this.service = service;
     }
 
-    @PostMapping("/hits")
+    @PostMapping("/hit")
     public void addHit(@RequestBody EndpointHit endpointHit) {
         service.addHit(endpointHit);
     }
@@ -33,7 +33,7 @@ public class StatisticsController {
     public List<ViewStats> getStatistics(@RequestParam(name="start") @NotNull String start,
                                          @RequestParam(name="end") @NotNull String end,
                                          @RequestParam(name="uris") List<String> uris,
-                                         @RequestParam(name = "unique", defaultValue = "false") boolean unique){
+                                         @RequestParam(name = "unique", defaultValue = "false") Boolean unique){
     return service.getStatistics(start, end, uris, unique);
     }
 }
