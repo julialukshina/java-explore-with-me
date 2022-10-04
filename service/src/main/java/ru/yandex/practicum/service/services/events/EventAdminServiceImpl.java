@@ -20,6 +20,7 @@ import ru.yandex.practicum.service.repositories.EventStorage;
 import ru.yandex.practicum.service.repositories.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final UserRepository userRepository;
     private final StateEnumConverter converter;
     private final Statistics statistics;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     @Autowired
@@ -55,14 +57,14 @@ public class EventAdminServiceImpl implements EventAdminService {
         LocalDateTime end = null;
         if (rangeStart != null) {
             try {
-                start = LocalDateTime.parse(rangeStart);
+                start = LocalDateTime.parse(rangeStart, formatter);
             } catch (TimeValidationException e) {
                 e.getMessage();
             }
         }
         if (rangeEnd != null) {
             try {
-                end = LocalDateTime.parse(rangeEnd);
+                end = LocalDateTime.parse(rangeEnd, formatter);
             } catch (TimeValidationException e) {
                 e.getMessage();
             }
@@ -146,7 +148,7 @@ public class EventAdminServiceImpl implements EventAdminService {
             event.setDescription(updateEventRequest.getDescription());
         }
         if (updateEventRequest.getEventDate() != null) {
-            event.setEventDate(LocalDateTime.parse(updateEventRequest.getEventDate()));
+            event.setEventDate(LocalDateTime.parse(updateEventRequest.getEventDate(), formatter));
         }
         if (updateEventRequest.getPaid() != null) {
             event.setPaid(updateEventRequest.getPaid());

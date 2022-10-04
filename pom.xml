@@ -23,7 +23,9 @@
 	</properties>
 <modules>
 	<module>service</module>
+	<module>statistics</module>
 </modules>
+
 	<build>
 		<pluginManagement>
 			<plugins>

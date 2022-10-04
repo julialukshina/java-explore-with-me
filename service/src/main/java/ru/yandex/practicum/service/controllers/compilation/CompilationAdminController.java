@@ -41,12 +41,12 @@ public class CompilationAdminController {
         service.addEventFromCompilation(compId, eventId);
     }
 
-    @DeleteMapping("/{compId}/pin}")
+    @DeleteMapping("/{compId}/pin")
     public void unpinCompilation(@PathVariable Long compId) {
         service.unpinCompilation(compId);
     }
 
-    @PatchMapping("/{compId}/pin}")
+    @PatchMapping("/{compId}/pin")
     public void pinCompilation(@PathVariable Long compId) {
         service.pinCompilation(compId);
     }

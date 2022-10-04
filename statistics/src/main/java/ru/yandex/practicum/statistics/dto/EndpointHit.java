@@ -2,7 +2,6 @@ package ru.yandex.practicum.statistics.dto;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -14,5 +13,5 @@ public class EndpointHit {
     String uri;
     String app;
     String ip;
-    LocalDateTime timestamp;
+    String timestamp;
 }

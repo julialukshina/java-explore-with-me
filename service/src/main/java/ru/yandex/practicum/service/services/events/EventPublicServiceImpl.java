@@ -34,6 +34,7 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final CategoryRepository categoryRepository;
     private final HitClient hitClient;
     private final Statistics statistics;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 //    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    private final String startStat = LocalDateTime.now().minusDays(30).format(formatter);
 //    private final String endStat = LocalDateTime.now().plusDays(30).format(formatter);
@@ -396,14 +397,14 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         LocalDateTime end = null;
                 if(rangeStart != null) {
                     try {
-                        start = LocalDateTime.parse(rangeStart);
+                        start = LocalDateTime.parse(rangeStart, formatter);
                     } catch (TimeValidationException e) {
                         e.getMessage();
                     }
                 }
             if(rangeEnd != null){
                 try{
-                    end=LocalDateTime.parse(rangeEnd);
+                    end=LocalDateTime.parse(rangeEnd, formatter);
                 }catch(TimeValidationException e){
                     e.getMessage();
                 }

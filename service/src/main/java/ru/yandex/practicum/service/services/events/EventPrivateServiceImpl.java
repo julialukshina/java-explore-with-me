@@ -27,6 +27,7 @@ import ru.yandex.practicum.service.repositories.RequestRepository;
 import ru.yandex.practicum.service.repositories.UserRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -38,6 +39,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private final EventRepository eventRepository;
     private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     private final Statistics statistics;
     @Lazy
@@ -69,7 +71,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public EventFullDto updateEvent(Long userId, UpdateEventRequest updateEventRequest) {
         userValidation(userId);
         eventValidation(updateEventRequest.getEventId());
-        if (LocalDateTime.parse(updateEventRequest.getEventDate()).isBefore(LocalDateTime.now().plusHours(2))) {
+        if (LocalDateTime.parse(updateEventRequest.getEventDate(), formatter).isBefore(LocalDateTime.now().plusHours(2))) {
             throw new MyValidationException("Изменение события доступно не менее, чем за два часа до его наступления");
         }
 
@@ -90,7 +92,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
             event.setDescription(updateEventRequest.getDescription());
         }
         if (updateEventRequest.getEventDate() != null) {
-            event.setEventDate(LocalDateTime.parse(updateEventRequest.getEventDate()));
+            event.setEventDate(LocalDateTime.parse(updateEventRequest.getEventDate(), formatter));
         } else {
             if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
                 throw new MyValidationException("Событие не может состояться ранее, чем через два часа после его обновления");
@@ -135,7 +137,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public EventFullDto postEvent(Long userId, NewEventDto dto) {
         userValidation(userId);
         LocalDateTime now = LocalDateTime.now();
-        if (LocalDateTime.parse(dto.getEventDate()).isBefore(now.plusHours(2))) {
+        if (LocalDateTime.parse(dto.getEventDate(), formatter).isBefore(now.plusHours(2))) {
             throw new MyValidationException("Событие может быть опубликовано не менее, чем за два часа до его наступления");
         }
         Event event = new Event(0,
@@ -144,7 +146,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                 new ArrayList<>(),
                 now,
                 dto.getDescription(),
-                LocalDateTime.parse(dto.getEventDate()),
+                LocalDateTime.parse(dto.getEventDate(), formatter),
                 userRepository.findById(userId).get(),
                 dto.isPaid(),
                 dto.getParticipantLimit(),

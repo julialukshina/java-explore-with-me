@@ -7,11 +7,12 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.service.clients.HitClient;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
+import ru.yandex.practicum.service.dto.statistics.EndpointHit;
 import ru.yandex.practicum.service.enums.Sort;
 import ru.yandex.practicum.service.enums.SortEnumConverter;
 import ru.yandex.practicum.service.exeptions.SortInvalidException;
 import ru.yandex.practicum.service.services.events.EventPublicService;
-import ru.yandex.practicum.statistics.dto.EndpointHit;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
@@ -61,7 +62,7 @@ public class EventPublicController {
                 request.getRequestURI(),
                 app,
                 request.getRemoteAddr(),
-                LocalDateTime.parse(LocalDateTime.now().format(formatter))));
+                LocalDateTime.now().format(formatter)));
 
         return service.getEvents(text, categories, paid, rangeStart, rangeEnd, isAvailable, sort1, from, size);
     }
@@ -72,7 +73,7 @@ public class EventPublicController {
                 request.getRequestURI(),
                 app,
                 request.getRemoteAddr(),
-                LocalDateTime.parse(LocalDateTime.now().format(formatter))));
+                LocalDateTime.now().format(formatter)));
 
         return service.getEventById(id);
     }

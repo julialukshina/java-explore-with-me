@@ -1,4 +1,4 @@
-package ru.yandex.practicum.statistics.dto;
+package ru.yandex.practicum.service.dto.statistics;
 
 import lombok.*;
 
@@ -14,5 +14,5 @@ public class EndpointHit {
     String uri;
     String app;
     String ip;
-    LocalDateTime timestamp;
+    String timestamp;
 }

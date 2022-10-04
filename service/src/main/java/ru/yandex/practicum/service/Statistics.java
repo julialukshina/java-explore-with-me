@@ -1,5 +1,6 @@
 package ru.yandex.practicum.service;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.service.clients.HitClient;
@@ -19,9 +20,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
+
 public class Statistics {
+
     private final HitClient hitClient;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String startStat = LocalDateTime.now().minusDays(30).format(formatter);
     private final String endStat = LocalDateTime.now().plusDays(30).format(formatter);
 

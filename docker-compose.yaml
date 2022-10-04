@@ -1,0 +1,43 @@
+version: '3.8'
+services:
+  service:
+    build: service
+    container_name: service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db-service
+      - statistics
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/service
+      - SERVICE_URL=http://statistics:9090
+
+  statistics:
+    build: statistics
+    container_name: statistics
+    ports:
+      - "9090:9090"
+    depends_on:
+      - db-statistics
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/statistics
+
+  db-service:
+    image: postgres:13.7-alpine
+    container_name: db-service
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=service
+      - POSTGRES_USER=lukshina
+      - POSTGRES_PASSWORD=12345
+
+  db-statistics:
+          image: postgres:13.7-alpine
+          container_name: db-statistics
+          ports:
+            - "6541:5432"
+          environment:
+            - POSTGRES_DB=statistics
+            - POSTGRES_USER=stat
+            - POSTGRES_PASSWORD=6789

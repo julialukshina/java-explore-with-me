@@ -7,10 +7,12 @@ import ru.yandex.practicum.service.mappers.users.UserShortDtoMapper;
 import ru.yandex.practicum.service.models.Event;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class EventFullMapper {
     private static StateEnumConverter converter = new StateEnumConverter();
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static EventFullDto toEventFullDto(Event event) {
         return new EventFullDto(event.getId(),
@@ -36,13 +38,13 @@ public class EventFullMapper {
                 dto.getAnnotation(),
                 CategoryMapper.toCategory(dto.getCategory()),
                 new ArrayList<>(),
-                LocalDateTime.parse(dto.getCreatedOn()),
+                LocalDateTime.parse(dto.getCreatedOn(), formatter),
                 dto.getDescription(),
-                LocalDateTime.parse(dto.getEventDate()),
+                LocalDateTime.parse(dto.getEventDate(), formatter),
                 UserShortDtoMapper.toUser(dto.getInitiator()),
                 dto.isPaid(),
                 dto.getParticipantLimit(),
-                LocalDateTime.parse(dto.getPublishedOn()),
+                LocalDateTime.parse(dto.getPublishedOn(), formatter),
                 dto.isRequestModeration(),
                 dto.getTitle(),
                 converter.convert(dto.getState()));

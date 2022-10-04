@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import java.util.List;
 @Slf4j
 public class StatisticsServiceImpl implements StatisticsService{
     private final HitRepository repository;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public StatisticsServiceImpl(HitRepository repository) {
@@ -29,6 +31,7 @@ public class StatisticsServiceImpl implements StatisticsService{
     @Override
     public void addHit(EndpointHit endpointHit) {
         repository.save(EndpointHitMapper.toHit(endpointHit));
+        System.out.println(repository.findById(1L));
     }
 
     @Override
@@ -42,11 +45,17 @@ public class StatisticsServiceImpl implements StatisticsService{
             throw new MyValidationException("Uris для подсчета статистики не переданы");
         }
         try {
-            startStat= LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8.toString()));
-            endStat= LocalDateTime.parse(URLDecoder.decode(end, StandardCharsets.UTF_8.toString()));
+            startStat= LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8.toString()), formatter);
+            endStat= LocalDateTime.parse(URLDecoder.decode(end, StandardCharsets.UTF_8.toString()), formatter);
         }catch (UnsupportedEncodingException ex) {
             throw new RuntimeException(ex.getCause());
         }
+//        try{
+//            startStat=LocalDateTime.parse(start, formatter);
+//            endStat=LocalDateTime.parse(end,formatter);
+//        }catch(MyValidationException e){
+//            throw new MyValidationException("Спарсить время не получилось");
+//        }
         if(unique){
             for (String uri:
                  uris) {
