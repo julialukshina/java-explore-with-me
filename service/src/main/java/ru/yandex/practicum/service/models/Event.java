@@ -27,22 +27,22 @@ public class Event {
     private Category category;
     @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
     private List<Request> confirmedRequests;
-    @Column(name = "createdOn", nullable = false)
+    @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
     @Column(name = "description", nullable = false)
     private String description;
-    @Column(name = "eventDate", nullable = false)
+    @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "initiator_id")
     private User initiator;
     @Column(name = "paid", nullable = false)
     private boolean paid;
-    @Column(name = "participantLimit")
+    @Column(name = "participant_limit")
     private long participantLimit;
-    @Column(name = "publishedOn")
+    @Column(name = "published_on")
     private LocalDateTime publishedOn;
-    @Column(name = "requestModeration")
+    @Column(name = "request_moderation")
     private boolean requestModeration;
     @Column(name = "title", nullable = false)
     private String title;

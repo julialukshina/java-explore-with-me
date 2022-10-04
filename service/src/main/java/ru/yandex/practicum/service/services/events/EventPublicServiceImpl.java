@@ -433,17 +433,19 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
             if(start==null){
                 start=LocalDateTime.now();
             }
-            sb.append(String.format("AND eventDate>='&s' ", start));
+            sb.append(String.format("AND event_date>='&s' ", start));
         }
         if(end!=null){
-            sb.append(String.format("AND eventDate>='&s' ", end));
+            sb.append(String.format("AND event_date>='&s' ", end));
         }
+        // TODO: 04.10.2022 джойнить таблицы
+
         if(isAvailable){
-            sb.append("AND participantLimit=0 OR participantLimit > confirmedRequests.size ");
+            sb.append("AND participant_limit=0 OR participant_limit > confirmedRequests.size ");
         }
 
        if(sort.equals(Sort.EVENT_DATE)){
-           sb.append("ORDER BY eventDate ");
+           sb.append("ORDER BY event_date ");
        }
        if(sort.equals(Sort.EVENT_DATE) || sort==null){
            sb.append(String.format("LIMIT '%d' OFFSET '%d'"), size, from);

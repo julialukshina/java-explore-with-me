@@ -112,10 +112,10 @@ public class EventAdminServiceImpl implements EventAdminService {
             if (start == null) {
                 start = LocalDateTime.now();
             }
-            sb.append(String.format("AND eventDate>='&s' ", start));
+            sb.append(String.format("AND event_date>='&s' ", start));
         }
         if (end != null) {
-            sb.append(String.format("AND eventDate>='&s' ", end));
+            sb.append(String.format("AND event_date>='&s' ", end));
         }
 
         if (sb.toString().contains("WHERE AND")) {
