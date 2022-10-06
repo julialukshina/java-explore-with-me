@@ -45,7 +45,7 @@ public class EventPublicController {
                                          @RequestParam(name = "paid", required = false) Boolean paid,
                                          @RequestParam(name = "rangeStart", required = false) String rangeStart,
                                          @RequestParam(name = "rangeEnd", required = false) String rangeEnd,
-                                         @RequestParam(name = "isAvailable", defaultValue = "false") boolean isAvailable,
+                                         @RequestParam(name = "onlyAvailable", defaultValue = "false") boolean onlyAvailable,
                                          @RequestParam(name = "sort", required = false) String sort,
                                          @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
                                          @RequestParam(name = "size", defaultValue = "10") @Positive int size,
@@ -65,7 +65,7 @@ public class EventPublicController {
                 LocalDateTime.now().format(formatter)));
 
 
-        return service.getEvents(text, categories, paid, rangeStart, rangeEnd, isAvailable, sort1, from, size);
+        return service.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort1, from, size);
     }
 
     @GetMapping(value = "/{id}") //возвращает вещь по Id

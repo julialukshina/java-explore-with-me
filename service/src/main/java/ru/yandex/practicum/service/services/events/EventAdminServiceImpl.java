@@ -178,16 +178,13 @@ public class EventAdminServiceImpl implements EventAdminService {
     public EventFullDto publishEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
-        if (!event.getState().equals("PENDING")) {
+        if (!event.getState().equals(State.PENDING)) {
             throw new MyValidationException("Опубликованы могут быть только события,находящиеся в состоянии ожидания публикации");
         }
         if (event.getEventDate().equals(LocalDateTime.now().plusHours(1))) {
             throw new MyValidationException("Обновлено может быть только событие, до наступления которого осталось больше часа");
         }
         event.setState(State.PUBLISHED);
-
-        // TODO: 02.10.2022 нужно ли здесь добавлять просмотры?
-
         return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
@@ -195,7 +192,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     public EventFullDto rejectEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
-        if (event.getState().equals("PUBLISHED")) {
+        if (event.getState().equals(State.PUBLISHED)) {
             throw new MyValidationException("Опубликованные события не могут быть отклонены");
         }
 //        event.setState(State.REJECTED);

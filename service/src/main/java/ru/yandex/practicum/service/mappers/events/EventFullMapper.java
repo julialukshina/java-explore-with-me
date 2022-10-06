@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
+import ru.yandex.practicum.service.dto.events.EventShortDto;
 import ru.yandex.practicum.service.enums.StateEnumConverter;
 import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.mappers.CategoryMapper;
@@ -64,5 +65,17 @@ public class EventFullMapper {
                 dto.isRequestModeration(),
                 dto.getTitle(),
                 converter.convert(dto.getState()));
+    }
+
+    public EventShortDto toEventShortDto(EventFullDto dto){
+        return new EventShortDto(dto.getId(),
+                dto.getAnnotation(),
+                dto.getCategory(),
+                dto.getConfirmedRequests(),
+                dto.getEventDate(),
+                dto.getInitiator(),
+                dto.isPaid(),
+                dto.getTitle(),
+                0);
     }
 }

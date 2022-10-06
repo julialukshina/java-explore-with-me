@@ -78,7 +78,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
 
         Event event = eventRepository.findById(updateEventRequest.getEventId()).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        if (event.getState().equals("PUBLISHED")) {
+        if (event.getState().equals(State.PUBLISHED)) {
             throw new MyValidationException("Только отмененные или ожидающие публикации события могут быть обновлены");
         }
 
@@ -115,7 +115,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         if (updateEventRequest.getTitle() != null) {
             event.setTitle(updateEventRequest.getTitle());
         }
-        if (event.getState().equals("CANCELED")) {
+        if (event.getState().equals(State.CANCELED)) {
             event.setState(State.PENDING);
         }
 
@@ -163,7 +163,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        if (!event.getState().equals("PENDING")) {
+        if (!event.getState().equals(State.PENDING)) {
             throw new MyValidationException("Только ожидающее модерации событие может быть отменено");
         }
         event.setState(State.CANCELED);

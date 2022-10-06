@@ -21,6 +21,7 @@ import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.EventStorage;
+import ru.yandex.practicum.service.repositories.RequestRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -34,6 +35,7 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventStorage storage;
 
     private final CategoryRepository categoryRepository;
+    private final RequestRepository requestRepository;
     private final HitClient hitClient;
     private final Statistics statistics;
     @Lazy
@@ -48,10 +50,11 @@ public class EventPublicServiceImpl implements EventPublicService {
 //    private Session session;
 
     @Autowired
-    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, HitClient hitClient, Statistics statistics, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper) {
+    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, RequestRepository requestRepository, HitClient hitClient, Statistics statistics, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper) {
         this.repository = repository;
         this.storage = storage;
         this.categoryRepository = categoryRepository;
+        this.requestRepository = requestRepository;
         this.hitClient = hitClient;
         this.statistics = statistics;
         this.eventFullMapper = eventFullMapper;
@@ -435,23 +438,21 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
             sb.append("AND category_id in (" + builder + ") ");
         }
         if(paid!=null){
-            sb.append(String.format("AND paid='&s' ", paid));
+            sb.append(String.format("AND paid='%s' ", paid));
         }
         if(start != null||(start == null && end ==null)){
             if(start==null){
                 start=LocalDateTime.now();
             }
-            sb.append(String.format("AND event_date>='&s' ", start));
+            sb.append(String.format("AND event_date>='%s' ", start));
         }
         if(end!=null){
-            sb.append(String.format("AND event_date>='&s' ", end));
+            sb.append(String.format("AND event_date<='%s' ", end));
         }
         // TODO: 04.10.2022 джойнить таблицы
 
         if(isAvailable){
-//            if(requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED) != null){
-//                eventConfirmedRequest=requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
-//            };
+
 
             sb.append("AND participant_limit=0 OR participant_limit > confirmedRequests.size ");
         }
@@ -459,14 +460,19 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
        if(sort.equals("EVENT_DATE")){
            sb.append("ORDER BY event_date ");
        }
-       if(sort.equals("EVENT_DATE") || sort==null){
-           sb.append(String.format("LIMIT '%d' OFFSET '%d'"), size, from);
-       }
+//       if(sort.equals("EVENT_DATE") || sort==null){
+//           sb.append(String.format("LIMIT '%d' OFFSET '%d'"), size, from);
+//       }
        if(sb.toString().contains("WHERE AND")){
            int i = sb.indexOf("AND");
            sb.delete(i, i+3);
        }
         String sqlQuery = String.valueOf(sb);
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println(sqlQuery);
+        System.out.println("\n");
+        System.out.println("\n");
 //
 //        eventDtos = storage.getEvents(sqlQuery).stream()
 //                .map(EventShortMapper::toEventShortDto)
@@ -486,15 +492,61 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
 //            dto.setViews(view.getHits());
 //            eventDtos.add(dto);
 //        }
-   if(sort.equals("VIEWS")){
-       statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery)).stream()
-               .sorted(Comparator.comparing(o->o.getViews()))
-               .skip(from)
-               .limit(size)
-               .collect(Collectors.toList());
-   }
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println(repository.findAll());
+        System.out.println("\n");
+        System.out.println("\n");
+        List<Event> events = storage.getEvents(sqlQuery);
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println(events);
+        System.out.println("\n");
+        System.out.println("\n");
+        if(sort.equals("EVENT_DATE") || sort==null){
+            if(isAvailable){
+                return statistics.getListEventShortDtoWithViews(events.stream()
+                        .map(eventFullMapper::toEventFullDto)
+                        .filter(eventFullDto -> eventFullDto.getConfirmedRequests()<eventFullDto.getParticipantLimit() ||
+                                eventFullDto.getParticipantLimit()==0)
+                        .skip(from)
+                        .limit(size)
+                        .map(eventFullMapper::toEvent)
+                        .collect(Collectors.toList()));
+            }else{
+                return statistics.getListEventShortDtoWithViews(events.stream()
+                        .skip(from)
+                        .limit(size)
+                        .collect(Collectors.toList()));
+            }
+        }
 
-        return statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery));
+   if(sort.equals("VIEWS")){
+       if(isAvailable){
+           return statistics.getListEventShortDtoWithViews(events.stream()
+                   .map(eventFullMapper::toEventFullDto)
+                   .filter(eventFullDto -> eventFullDto.getConfirmedRequests()<eventFullDto.getParticipantLimit() ||
+                           eventFullDto.getParticipantLimit()==0)
+                   .sorted(Comparator.comparing(o->o.getViews()))
+                   .skip(from)
+                   .limit(size)
+                   .map(eventFullMapper::toEvent)
+                   .collect(Collectors.toList()));
+       }else{
+           return  statistics.getListEventShortDtoWithViews(events).stream()
+                   .sorted(Comparator.comparing(o->o.getViews()))
+                   .skip(from)
+                   .limit(size)
+                   .collect(Collectors.toList());
+       }
+//       statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery)).stream()
+//               .sorted(Comparator.comparing(o->o.getViews()))
+//               .skip(from)
+//               .limit(size)
+//               .collect(Collectors.toList());
+   }
+return null;
+  //      return statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery));
 //        return storage.getEvents(sqlQuery).stream()
 //                .map(eventShortMapper::toEventShortDto)
 //                .collect(Collectors.toList());
@@ -536,4 +588,11 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         eventValidation(id);
         return repository.findById(id).get();
     }
+//    private long getConfirmRequest(Long id){
+//        long eventConfirmedRequest = 0;
+//                    if(requestRepository.countByEventIdAndStatus(id, Status.CONFIRMED) != null){
+//                eventConfirmedRequest=requestRepository.countByEventIdAndStatus(id, Status.CONFIRMED);
+//            }
+//          return eventConfirmedRequest;
+//    }
 }
