@@ -8,12 +8,12 @@ import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.services.events.EventAdminService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/events")
 @Slf4j
 @Validated
 public class EventAdminController {
@@ -25,31 +25,30 @@ public class EventAdminController {
     }
 
 
-    @GetMapping
+    @GetMapping("/admin/events")
     public List<EventFullDto> getEvents(@RequestParam(name = "users", required = false) List<Integer> users,
                                         @RequestParam(name = "states", required = false) List<String> states,
                                         @RequestParam(name = "categories", required = false) List<Integer> categories,
                                         @RequestParam(name = "rangeStart", required = false) String rangeStart,
                                         @RequestParam(name = "rangeEnd", required = false) String rangeEnd,
                                         @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
-                                        @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
-
+                                        @RequestParam(name = "size", defaultValue = "10") @Positive int size, HttpServletRequest request) {
 
         return service.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 
 
-    @PutMapping("/{eventId}")
+    @PutMapping("/admin/events/{eventId}")
     public EventFullDto updateEvent(@PathVariable Long eventId, @RequestBody UpdateEventRequest updateEventRequest) {
         return service.updateEvent(eventId, updateEventRequest);
     }
 
-    @PatchMapping("/{eventId}/publish")
+    @PatchMapping("/admin/events/{eventId}/publish")
     public EventFullDto publishEvent(@PathVariable Long eventId) {
         return service.publishEvent(eventId);
     }
 
-    @PatchMapping("/{eventId}/reject")
+    @PatchMapping("/admin/events/{eventId}/reject")
     public EventFullDto rejectEvent(@PathVariable Long eventId) {
         return service.rejectEvent(eventId);
     }

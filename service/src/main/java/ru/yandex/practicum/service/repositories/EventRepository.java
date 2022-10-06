@@ -221,8 +221,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 //            "and e.participantLimit=0 or e.participantLimit > e.confirmedRequests.size")
 //    List<Event> searchAllArgWithoutPaidCategoriesAndStartWithEndForStatistic(String text, @Param("end") LocalDateTime end, boolean isAvailable);
 
-    Page<Event> findByInitiator(Long userId, Pageable pageable);
+    Page<Event> findByInitiatorId(Long userId, Pageable pageable);
 
-    List<Event> findByCategory(Long catId);
+    List<Event> findByCategoryId(Long catId);
 }
 

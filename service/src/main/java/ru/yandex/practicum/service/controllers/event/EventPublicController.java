@@ -30,7 +30,7 @@ public class EventPublicController {
     private final EventPublicService service;
     private final HitClient client;
     private final String app = "service";
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public EventPublicController(EventPublicService service, SortEnumConverter converter, HitClient client) {
@@ -63,6 +63,7 @@ public class EventPublicController {
                 app,
                 request.getRemoteAddr(),
                 LocalDateTime.now().format(formatter)));
+
 
         return service.getEvents(text, categories, paid, rangeStart, rangeEnd, isAvailable, sort1, from, size);
     }

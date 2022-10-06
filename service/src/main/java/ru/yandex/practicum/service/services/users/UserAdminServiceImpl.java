@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.MyPageable;
 import ru.yandex.practicum.service.dto.users.NewUserRequest;
 import ru.yandex.practicum.service.dto.users.UserDto;
@@ -28,6 +29,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
+    @Transactional
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         Pageable pageable = MyPageable.of(from, size);
         if (!ids.isEmpty()) {
@@ -45,12 +47,14 @@ public class UserAdminServiceImpl implements UserAdminService {
     }
 
     @Override
+    @Transactional
     public UserDto createUser(NewUserRequest newUserRequest) {
         User user = new User(0, newUserRequest.getName(), newUserRequest.getEmail());
         return UserMapper.toUserDto(userRepository.save(user));
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long userId) {
         userValidation(userId);
         userRepository.deleteById(userId);

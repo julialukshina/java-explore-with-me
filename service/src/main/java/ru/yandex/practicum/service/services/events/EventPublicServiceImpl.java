@@ -2,6 +2,7 @@ package ru.yandex.practicum.service.services.events;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.clients.HitClient;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.service.dto.events.EventShortDto;
 import ru.yandex.practicum.service.dto.statistics.ViewStats;
 import ru.yandex.practicum.service.enums.Sort;
 import ru.yandex.practicum.service.enums.State;
+import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
 import ru.yandex.practicum.service.exeptions.MyValidationException;
 import ru.yandex.practicum.service.exeptions.TimeValidationException;
@@ -34,6 +36,10 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final CategoryRepository categoryRepository;
     private final HitClient hitClient;
     private final Statistics statistics;
+    @Lazy
+    private final EventFullMapper eventFullMapper;
+    @Lazy
+    private final EventShortMapper eventShortMapper;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 //    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 //    private final String startStat = LocalDateTime.now().minusDays(30).format(formatter);
@@ -42,12 +48,14 @@ public class EventPublicServiceImpl implements EventPublicService {
 //    private Session session;
 
     @Autowired
-    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, HitClient hitClient, Statistics statistics) {
+    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, HitClient hitClient, Statistics statistics, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper) {
         this.repository = repository;
         this.storage = storage;
         this.categoryRepository = categoryRepository;
         this.hitClient = hitClient;
         this.statistics = statistics;
+        this.eventFullMapper = eventFullMapper;
+        this.eventShortMapper = eventShortMapper;
     }
 
 //    @Override
@@ -441,13 +449,17 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         // TODO: 04.10.2022 джойнить таблицы
 
         if(isAvailable){
+//            if(requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED) != null){
+//                eventConfirmedRequest=requestRepository.countByEventIdAndStatus(event.getId(), Status.CONFIRMED);
+//            };
+
             sb.append("AND participant_limit=0 OR participant_limit > confirmedRequests.size ");
         }
 
-       if(sort.equals(Sort.EVENT_DATE)){
+       if(sort.equals("EVENT_DATE")){
            sb.append("ORDER BY event_date ");
        }
-       if(sort.equals(Sort.EVENT_DATE) || sort==null){
+       if(sort.equals("EVENT_DATE") || sort==null){
            sb.append(String.format("LIMIT '%d' OFFSET '%d'"), size, from);
        }
        if(sb.toString().contains("WHERE AND")){
@@ -474,7 +486,7 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
 //            dto.setViews(view.getHits());
 //            eventDtos.add(dto);
 //        }
-   if(sort.equals(Sort.VIEWS)){
+   if(sort.equals("VIEWS")){
        statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery)).stream()
                .sorted(Comparator.comparing(o->o.getViews()))
                .skip(from)
@@ -483,13 +495,17 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
    }
 
         return statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery));
+//        return storage.getEvents(sqlQuery).stream()
+//                .map(eventShortMapper::toEventShortDto)
+//                .collect(Collectors.toList());
     }
 
     @Override
     public EventFullDto getEventById(Long id) {
         eventValidation(id);
-        EventFullDto dto = EventFullMapper.toEventFullDto(repository.findById(id).get());
-        if (!dto.getState().equals(State.PUBLISHED)) {
+        System.out.println(repository.findById(id));
+        EventFullDto dto = eventFullMapper.toEventFullDto(repository.findById(id).get());
+        if (!dto.getState().equals("PUBLISHED")) {
             throw new MyValidationException("Только опубликованные события могут быть просмотрены");
         }
 //        String uri = "http://localhost:8080/events/"+dto.getId();
@@ -497,7 +513,9 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
 //        uris.add(uri);
 //        List <ViewStats> views = (List<ViewStats>)hitClient.getStats(startStat, endStat, uris, false);
 //        dto.setViews(views.get(0).getHits());
+
         return statistics.getEventFullDtoWithViews(dto);
+ //       return dto;
     }
 
 

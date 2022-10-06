@@ -64,7 +64,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     @Override
     public List<ParticipationRequestDto> getRequestsOfUser(Long userId) {
         userValidation(userId);
-        return requestRepository.findByRequester(userId).stream()
+        return requestRepository.findByRequesterId(userId).stream()
                 .map(request -> requestMapper.toRequestDto(request))
                 .collect(Collectors.toList());
     }
@@ -73,7 +73,12 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
     public ParticipationRequestDto postRequest(Long userId, Long eventId) {
         userValidation(userId);
         eventValidation(eventId);
-        if (requestRepository.findByEventAndRequester(eventId, userId) != null) {
+        long eventConfirmedRequest = 0;
+        if(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED) != null){
+            eventConfirmedRequest=requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        }
+
+        if (requestRepository.findByEventIdAndRequesterId(eventId, userId) != null) {
             throw new MyValidationException("Заявку на участие в событии нельзя добавить повторно");
         }
         Event event = eventRepository.findById(eventId).get();
@@ -83,7 +88,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         if (!event.getState().equals(State.PUBLISHED)) {
             throw new MyValidationException("Подать заявку можно только на опубликованное событие");
         }
-        if (event.getParticipantLimit() != 0 && event.getParticipantLimit() == event.getConfirmedRequests().size()) {
+        if (event.getParticipantLimit() != 0 && event.getParticipantLimit() == eventConfirmedRequest) {
             throw new MyValidationException(String.format("Лимит заявок на событие с id='%s' исчерпан", eventId));
         }
         Request request = new Request(0, LocalDateTime.now(), event, userRepository.findById(userId).get(), Status.PENDING);

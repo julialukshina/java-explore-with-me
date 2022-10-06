@@ -18,7 +18,6 @@ import ru.yandex.practicum.service.exeptions.MyNotFoundException;
 import ru.yandex.practicum.service.exeptions.MyValidationException;
 import ru.yandex.practicum.service.mappers.RequestMapper;
 import ru.yandex.practicum.service.mappers.events.EventFullMapper;
-import ru.yandex.practicum.service.mappers.events.EventShortMapper;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.models.Request;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
@@ -28,7 +27,6 @@ import ru.yandex.practicum.service.repositories.UserRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,16 +41,19 @@ public class EventPrivateServiceImpl implements EventPrivateService {
 
     private final Statistics statistics;
     @Lazy
-    @Autowired
-    RequestMapper requestMapper;
+    private final RequestMapper requestMapper;
+    @Lazy
+    private final EventFullMapper eventFullMapper;
 
     @Autowired
-    public EventPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository, Statistics statistics) {
+    public EventPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository, CategoryRepository categoryRepository, RequestRepository requestRepository, Statistics statistics, RequestMapper requestMapper, EventFullMapper eventFullMapper) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.requestRepository = requestRepository;
         this.statistics = statistics;
+        this.requestMapper = requestMapper;
+        this.eventFullMapper = eventFullMapper;
     }
 
     @Override
@@ -60,7 +61,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         userValidation(userId);
         Pageable pageable = MyPageable.of(from, size);
 
-        return statistics.getListEventShortDtoWithViews((List<Event>) eventRepository.findByInitiator(userId, pageable));
+        return statistics.getListEventShortDtoWithViews((List<Event>) eventRepository.findByInitiatorId(userId, pageable));
 
 //        return eventRepository.findByInitiator(userId, pageable).stream()
 //                .map(EventShortMapper::toEventShortDto)
@@ -77,7 +78,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
 
         Event event = eventRepository.findById(updateEventRequest.getEventId()).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        if (event.getState().equals(State.PUBLISHED)) {
+        if (event.getState().equals("PUBLISHED")) {
             throw new MyValidationException("Только отмененные или ожидающие публикации события могут быть обновлены");
         }
 
@@ -114,13 +115,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         if (updateEventRequest.getTitle() != null) {
             event.setTitle(updateEventRequest.getTitle());
         }
-        if (event.getState().equals(State.CANCELED)) {
+        if (event.getState().equals("CANCELED")) {
             event.setState(State.PENDING);
         }
 
         // TODO: 02.10.2022 нужны ли здесь просмотры?
 
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
@@ -129,8 +130,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        return statistics.getEventFullDtoWithViews(EventFullMapper.toEventFullDto(event));
-//        return EventFullMapper.toEventFullDto(event);
+        return statistics.getEventFullDtoWithViews(eventFullMapper.toEventFullDto(event));
+//        return eventFullMapper.toEventFullDto(event);
     }
 
     @Override
@@ -143,7 +144,6 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         Event event = new Event(0,
                 dto.getAnnotation(),
                 categoryRepository.findById(dto.getCategory()).get(),
-                new ArrayList<>(),
                 now,
                 dto.getDescription(),
                 LocalDateTime.parse(dto.getEventDate(), formatter),
@@ -154,7 +154,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                 dto.isRequestModeration(),
                 dto.getTitle(),
                 State.PENDING);
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
@@ -163,11 +163,11 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        if (!event.getState().equals(State.PENDING)) {
+        if (!event.getState().equals("PENDING")) {
             throw new MyValidationException("Только ожидающее модерации событие может быть отменено");
         }
         event.setState(State.CANCELED);
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
@@ -176,7 +176,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        return requestRepository.findByEvent(eventId).stream()
+        return requestRepository.findByEventId(eventId).stream()
                 .map(request -> requestMapper.toRequestDto(request))
                 .collect(Collectors.toList());
     }

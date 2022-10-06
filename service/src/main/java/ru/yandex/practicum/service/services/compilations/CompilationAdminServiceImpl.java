@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
@@ -36,6 +37,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     }
 
     @Override
+    @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
         for (Long id :
                 dto.getEvents()) {
@@ -47,16 +49,15 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     }
 
     @Override
+    @Transactional
     public void deleteCompilation(Long compId) {
         compilationValidation(compId);
         compilationRepository.deleteById(compId);
     }
 
     @Override
+    @Transactional
     public void deleteEventFromCompilation(Long compId, Long eventId) {
-
-        // TODO: 28.09.2022 пщдумай над этим методом, слишком заморочено
-
         compilationValidation(compId);
         eventValidation(eventId);
         Compilation compilation = compilationRepository.findById(compId).get();
@@ -69,9 +70,8 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     }
 
     @Override
+    @Transactional
     public void addEventFromCompilation(Long compId, Long eventId) {
-        // TODO: 28.09.2022 пщдумай над этим методом, слишком заморочено
-
         compilationValidation(compId);
         eventValidation(eventId);
         Compilation compilation = compilationRepository.findById(compId).get();
@@ -84,6 +84,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     }
 
     @Override
+    @Transactional
     public void unpinCompilation(Long compId) {
         compilationValidation(compId);
         Compilation compilation = compilationRepository.findById(compId).get();
@@ -94,6 +95,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     }
 
     @Override
+    @Transactional
     public void pinCompilation(Long compId) {
         compilationValidation(compId);
         Compilation compilation = compilationRepository.findById(compId).get();

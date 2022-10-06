@@ -9,7 +9,6 @@ import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
 import ru.yandex.practicum.service.services.compilations.CompilationAdminService;
 
 @RestController
-@RequestMapping("/admin/compilations")
 @Slf4j
 @Validated
 public class CompilationAdminController {
@@ -21,32 +20,32 @@ public class CompilationAdminController {
     }
 
 
-    @PostMapping
+    @PostMapping("/admin/compilations")
     public CompilationDto createCompilation(@RequestBody NewCompilationDto dto) {
         return service.createCompilation(dto);
     }
 
-    @DeleteMapping("/{compId}")
+    @DeleteMapping("/admin/compilations/{compId}")
     public void deleteCompilation(@PathVariable Long compId) {
         service.deleteCompilation(compId);
     }
 
-    @DeleteMapping("/{compId}/events/{eventId}")
+    @DeleteMapping("/admin/compilations/{compId}/events/{eventId}")
     public void deleteEventFromCompilation(@PathVariable Long compId, @PathVariable Long eventId) {
         service.deleteEventFromCompilation(compId, eventId);
     }
 
-    @PatchMapping("/{compId}/events/{eventId}")
+    @PatchMapping("/admin/compilations/{compId}/events/{eventId}")
     public void addEventFromCompilation(@PathVariable Long compId, @PathVariable Long eventId) {
         service.addEventFromCompilation(compId, eventId);
     }
 
-    @DeleteMapping("/{compId}/pin")
+    @DeleteMapping("/admin/compilations/{compId}/pin")
     public void unpinCompilation(@PathVariable Long compId) {
         service.unpinCompilation(compId);
     }
 
-    @PatchMapping("/{compId}/pin")
+    @PatchMapping("/admin/compilations/{compId}/pin")
     public void pinCompilation(@PathVariable Long compId) {
         service.pinCompilation(compId);
     }

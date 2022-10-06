@@ -15,4 +15,7 @@ public class NewCategoryDto {
     @NotNull
     @NotBlank
     private String name;
+
+    public NewCategoryDto() {
+    }
 }

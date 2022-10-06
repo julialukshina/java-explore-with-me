@@ -19,18 +19,26 @@ import java.util.stream.Collectors;
 public class CompilationMapper {
     private final EventPublicService service;
     private final Statistics statistics;
+    @Lazy
+    private final EventShortMapper eventShortMapper;
 
     @Autowired
-    public CompilationMapper(EventPublicService service, Statistics statistics) {
+    public CompilationMapper(EventPublicService service, Statistics statistics, EventShortMapper eventShortMapper) {
         this.service = service;
         this.statistics = statistics;
+        this.eventShortMapper = eventShortMapper;
     }
 
 
     public CompilationDto toCompilationDto(Compilation compilation) {
-        List<Event> events = (List<Event>) compilation.getEvents();
+        List<Event> events =  compilation.getEvents().stream()
+                .collect(Collectors.toList());
         return new CompilationDto(compilation.getId(),
-                statistics.getListEventShortDtoWithViews(events),
+                events.stream()
+                        .map(eventShortMapper::toEventShortDto)
+                                .collect(Collectors.toList()),
+                // TODO: 05.10.2022 статистика
+//                statistics.getListEventShortDtoWithViews(events),
                 compilation.isPinned(),
                 compilation.getTitle());
     }

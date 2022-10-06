@@ -13,7 +13,6 @@ import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin/users")
 @Slf4j
 @Validated
 public class UserAdminController {
@@ -24,19 +23,19 @@ public class UserAdminController {
         this.service = service;
     }
 
-    @GetMapping
+    @GetMapping("/admin/users")
     public List<UserDto> getUsers(@RequestParam(name = "ids", required = false) List<Long> ids,
                                   @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
                                   @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
         return service.getUsers(ids, from, size);
     }
 
-    @PostMapping
+    @PostMapping("/admin/users")
     public UserDto createUser(@RequestBody NewUserRequest newUserRequest) {
         return service.createUser(newUserRequest);
     }
 
-    @DeleteMapping("/{userId}")
+    @DeleteMapping("/admin/users/{userId}")
     public void deleteUser(@PathVariable Long userId) {
         service.deleteUser(userId);
     }

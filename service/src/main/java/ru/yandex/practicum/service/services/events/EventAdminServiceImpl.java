@@ -2,6 +2,7 @@ package ru.yandex.practicum.service.services.events;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
@@ -19,6 +20,7 @@ import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.EventStorage;
 import ru.yandex.practicum.service.repositories.UserRepository;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -33,26 +35,29 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final UserRepository userRepository;
     private final StateEnumConverter converter;
     private final Statistics statistics;
+    @Lazy
+    private final EventFullMapper eventFullMapper;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     @Autowired
     public EventAdminServiceImpl(EventRepository eventRepository, CategoryRepository categoryRepository,
                                  EventStorage storage, UserRepository userRepository, StateEnumConverter converter,
-                                 Statistics statistics) {
+                                 Statistics statistics, EventFullMapper eventFullMapper) {
         this.eventRepository = eventRepository;
         this.categoryRepository = categoryRepository;
         this.storage = storage;
         this.userRepository = userRepository;
         this.converter = converter;
         this.statistics = statistics;
+        this.eventFullMapper = eventFullMapper;
     }
 
     // TODO: 27.09.2022 прописать метод
     @Override
+    @Transactional
     public List<EventFullDto> getEvents(List<Integer> users, List<String> states, List<Integer> categories,
                                         String rangeStart, String rangeEnd, int from, int size) {
-
         LocalDateTime start = null;
         LocalDateTime end = null;
         if (rangeStart != null) {
@@ -83,18 +88,7 @@ public class EventAdminServiceImpl implements EventAdminService {
             }
             sb.append("initiator_id IN (" + builder + ") ");
         }
-        if (states.size() > 0) {
-            stateValidation(states.get(0));
-            StringBuilder builder = new StringBuilder();
-            builder.append(states.get(0));
-            if (states.size() > 1) {
-                for (int i = 1; i < states.size(); i++) {
-                    stateValidation(states.get(i));
-                    builder.append(", " + states.get(i));
-                }
-            }
-            sb.append("AND state IN (" + builder + ") ");
-        }
+
         if (categories.size() > 0) {
             categoryValidation(Long.valueOf(categories.get(0)));
             StringBuilder builder = new StringBuilder();
@@ -112,10 +106,22 @@ public class EventAdminServiceImpl implements EventAdminService {
             if (start == null) {
                 start = LocalDateTime.now();
             }
-            sb.append(String.format("AND event_date>='&s' ", start));
+            sb.append(String.format("AND event_date>='%s' ", start));
         }
         if (end != null) {
-            sb.append(String.format("AND event_date>='&s' ", end));
+            sb.append(String.format("AND event_date<='%s' ", end));
+        }
+        if (states.size() > 0) {
+            stateValidation(states.get(0));
+            StringBuilder builder = new StringBuilder();
+            builder.append("'" + states.get(0) + "'");
+            if (states.size() > 1) {
+                for (int i = 1; i < states.size(); i++) {
+                    stateValidation(states.get(i));
+                    builder.append("OR state LIKE '" + states.get(i) + "'");
+                }
+            }
+            sb.append("AND state LIKE " + builder + " ");
         }
 
         if (sb.toString().contains("WHERE AND")) {
@@ -125,20 +131,15 @@ public class EventAdminServiceImpl implements EventAdminService {
         String sqlQuery = String.valueOf(sb);
 
         return statistics.getListEventFullDtoWithViews(storage.getEvents(sqlQuery));
-
-//
-//        return storage.getEvents(sqlQuery).stream()
-//                .map(EventFullMapper::toEventFullDto)
-//                .collect(Collectors.toList());
-
     }
 
     @Override
+    @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventRequest updateEventRequest) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (updateEventRequest.getAnnotation() != null) {
-            event.setDescription(updateEventRequest.getAnnotation());
+            event.setAnnotation(updateEventRequest.getAnnotation());
         }
         if (updateEventRequest.getCategory() != 0) {
             event.setCategory(categoryRepository.findById(updateEventRequest.getCategory()).get());
@@ -163,16 +164,21 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (updateEventRequest.getTitle() != null) {
             event.setTitle(updateEventRequest.getTitle());
         }
+//        System.out.println('\n');
+//        System.out.println('\n');
+//        System.out.println(event.getAnnotation());
+//        System.out.println('\n');
+//        System.out.println('\n');
 
-        return statistics.getEventFullDtoWithViews(EventFullMapper.toEventFullDto(eventRepository.save(event)));
-//        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return statistics.getEventFullDtoWithViews(eventFullMapper.toEventFullDto(eventRepository.save(event)));
+//       return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
     public EventFullDto publishEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
-        if (!event.getState().equals(State.PENDING)) {
+        if (!event.getState().equals("PENDING")) {
             throw new MyValidationException("Опубликованы могут быть только события,находящиеся в состоянии ожидания публикации");
         }
         if (event.getEventDate().equals(LocalDateTime.now().plusHours(1))) {
@@ -182,21 +188,19 @@ public class EventAdminServiceImpl implements EventAdminService {
 
         // TODO: 02.10.2022 нужно ли здесь добавлять просмотры?
 
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+        return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     @Override
     public EventFullDto rejectEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
-        if (event.getState().equals(State.PUBLISHED)) {
+        if (event.getState().equals("PUBLISHED")) {
             throw new MyValidationException("Опубликованные события не могут быть отклонены");
         }
-        event.setState(State.REJECTED);
-
-        // TODO: 02.10.2022 нужно ли здесь добавлять просмотры?
-
-        return EventFullMapper.toEventFullDto(eventRepository.save(event));
+//        event.setState(State.REJECTED);
+        event.setState(State.CANCELED);
+        return eventFullMapper.toEventFullDto(eventRepository.save(event));
     }
 
     private void eventValidation(Long id) {

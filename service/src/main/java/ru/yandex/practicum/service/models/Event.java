@@ -25,8 +25,8 @@ public class Event {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
-    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
-    private List<Request> confirmedRequests;
+//    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+//    private List<Request> confirmedRequests;
     @Column(name = "created_on", nullable = false)
     private LocalDateTime createdOn;
     @Column(name = "description", nullable = false)

@@ -11,7 +11,8 @@ services:
     environment:
       - DB_HOST=db-service
       - DB_PORT=5432
-      - SERVICE_URL=http://statistics:9090
+#      - SERVER_URL=http://statistics:9090
+      - SERVER_URL=http://stats-server:9090
 
   stats-server:
     build: statistics

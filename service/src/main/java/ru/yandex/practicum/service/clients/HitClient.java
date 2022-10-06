@@ -19,7 +19,10 @@ import java.util.Map;
 public class HitClient extends BaseClient {
 
     @Autowired
-    public HitClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
+//    public HitClient(@Value("${stats-server.url}") String serverUrl, RestTemplateBuilder builder) {
+ //   public HitClient(@Value("${statistics.url}") String serverUrl, RestTemplateBuilder builder) {
+//        public HitClient(@Value("http://localhost:9090") String serverUrl, RestTemplateBuilder builder) {
+    public HitClient(@Value("http://stats-server:9090") String serverUrl, RestTemplateBuilder builder) {
         super(
                 builder
                         .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
@@ -27,6 +30,7 @@ public class HitClient extends BaseClient {
                         .build()
         );
     }
+
 
     public ResponseEntity<Object> createHit(EndpointHit endpointHit) {
         return post("/hit", endpointHit);
@@ -47,7 +51,7 @@ public class HitClient extends BaseClient {
                 "uris", uri,
                 "unique", unique.toString()
         );
-        return get("/search?text={text}&from={from}&size={size}", parameters);
+        return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
     }
 
 }

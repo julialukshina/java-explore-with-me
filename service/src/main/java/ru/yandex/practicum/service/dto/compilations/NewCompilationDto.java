@@ -18,7 +18,9 @@ public class NewCompilationDto {
     @NotNull
     @NotBlank
     private boolean pinned;
-    @NotNull
     @NotBlank
     private String title;
+
+    public NewCompilationDto() {
+    }
 }
