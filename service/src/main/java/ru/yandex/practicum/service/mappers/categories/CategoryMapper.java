@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service.mappers;
+package ru.yandex.practicum.service.mappers.categories;
 
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.models.Category;

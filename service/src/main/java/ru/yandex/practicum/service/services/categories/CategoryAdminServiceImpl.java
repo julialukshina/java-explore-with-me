@@ -7,11 +7,10 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.dto.categories.NewCategoryDto;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.mappers.CategoryMapper;
+import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
 import ru.yandex.practicum.service.models.Category;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
-
 
 
 @Service
@@ -26,19 +25,39 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
         this.eventRepository = eventRepository;
     }
 
+    /**
+     * Обновление категории
+     *
+     * @param dto CategoryDto
+     * @return CategoryDto
+     */
     @Override
     @Transactional
     public CategoryDto updateCategory(CategoryDto dto) {
         categoryValidation(dto.getId());
+        log.info("Категория с id {} обновлена", dto.getId());
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(dto)));
     }
 
+    /**
+     * Создание категории
+     *
+     * @param dto NewCategoryDto
+     * @return CategoryDto
+     */
     @Override
     @Transactional
     public CategoryDto postCategory(NewCategoryDto dto) {
-        Category category = new Category(0, dto.getName());
-        return CategoryMapper.toCategoryDto(categoryRepository.save(category));
+        Category category = categoryRepository.save(new Category(0, dto.getName()));
+        log.info("Создана новая категория {}", category.getId());
+        return CategoryMapper.toCategoryDto(category);
     }
+
+    /**
+     * Удаление категории по id
+     *
+     * @param catId Long
+     */
 
     @Override
     @Transactional
@@ -49,8 +68,14 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
                     "с категорией с id = '%s'", catId));
         }
         categoryRepository.deleteById(catId);
+        log.info("Категория с id {} удалена", catId);
     }
 
+    /**
+     * Проверка категории на наличие в базе по id
+     *
+     * @param id Long
+     */
     private void categoryValidation(Long id) {
         if (!categoryRepository.existsById(id)) {
             throw new MyNotFoundException(String.format("Категория с id = '%s' не найдена", id));

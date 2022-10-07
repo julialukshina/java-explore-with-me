@@ -3,6 +3,9 @@ package ru.yandex.practicum.service;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+/**
+ * Создан собственный Pageable
+ */
 public class MyPageable implements Pageable {
     private final int offset;
     private final int limit;

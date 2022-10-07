@@ -13,7 +13,6 @@ import ru.yandex.practicum.service.enums.SortEnumConverter;
 import ru.yandex.practicum.service.exeptions.SortInvalidException;
 import ru.yandex.practicum.service.services.events.EventPublicService;
 
-
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -41,7 +40,7 @@ public class EventPublicController {
 
     @GetMapping
     public List<EventShortDto> getEvents(@RequestParam(name = "text", required = false) String text,
-                                         @RequestParam(name = "categories", required = false) List <Integer> categories,
+                                         @RequestParam(name = "categories", required = false) List<Integer> categories,
                                          @RequestParam(name = "paid", required = false) Boolean paid,
                                          @RequestParam(name = "rangeStart", required = false) String rangeStart,
                                          @RequestParam(name = "rangeEnd", required = false) String rangeEnd,
@@ -50,13 +49,13 @@ public class EventPublicController {
                                          @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
                                          @RequestParam(name = "size", defaultValue = "10") @Positive int size,
                                          HttpServletRequest request) {
-        Sort sort1=null;
-        if(sort!=null){
-           sort1= converter.convert(sort);
-           if(sort1==Sort.UNSUPPORTED_SORT){
-               throw new SortInvalidException();
-           }
-       }
+        Sort sort1 = null;
+        if (sort != null) {
+            sort1 = converter.convert(sort);
+            if (sort1 == Sort.UNSUPPORTED_SORT) {
+                throw new SortInvalidException();
+            }
+        }
 
         client.createHit(new EndpointHit(0,
                 request.getRequestURI(),

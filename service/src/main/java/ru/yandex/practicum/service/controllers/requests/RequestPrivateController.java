@@ -3,7 +3,7 @@ package ru.yandex.practicum.service.controllers.requests;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.service.dto.ParticipationRequestDto;
+import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.services.requests.RequestPrivateService;
 
 import java.util.List;

@@ -12,7 +12,7 @@ import ru.yandex.practicum.service.exeptions.MyNotFoundException;
 import ru.yandex.practicum.service.exeptions.MyValidationException;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,26 +34,15 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(MyValidationException.class)
-    public ResponseEntity<Object> handleEventValidationException(MyValidationException e, WebRequest request) {
+    public ResponseEntity<Object> handleMyValidationException(MyValidationException e, WebRequest request) {
         ApiError apiError = new ApiError();
-        apiError.setErrors(new ArrayList<>());
-//        apiError.setMessage("Only pending or canceled events can be changed");
+        Arrays.stream(e.getStackTrace())
+                .map(StackTraceElement::toString)
+                .forEach(apiError.getErrors()::add);
         apiError.setMessage(e.getMessage());
         apiError.setReason("For the requested operation the conditions are not met.");
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
-
-//    @ExceptionHandler(IllegalArgumentException.class)
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ResponseEntity<String> handleConstraintViolationException(IllegalArgumentException e) {
-//        return new ResponseEntity<>("{\"error\": \"Unknown state: UNSUPPORTED_STATUS\"}",
-//                HttpStatus.BAD_REQUEST);
-//    }
-//    @ExceptionHandler({MyEntityNotFoundException.class, EntityNotFoundException.class})
-//    protected ResponseEntity<Object> handleEntityNotFoundEx(MyEntityNotFoundException ex, WebRequest request) {
-//        ApiError apiError = new ApiError("Entity Not Found Exception", ex.getMessage());
-//        return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
-//    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,

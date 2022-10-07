@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service.dto;
+package ru.yandex.practicum.service.dto.requests;
 
 import lombok.*;
 

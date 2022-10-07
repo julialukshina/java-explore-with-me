@@ -24,7 +24,6 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -37,7 +36,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     private final Statistics statistics;
     @Lazy
     private final EventFullMapper eventFullMapper;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
     @Autowired
@@ -53,7 +52,18 @@ public class EventAdminServiceImpl implements EventAdminService {
         this.eventFullMapper = eventFullMapper;
     }
 
-    // TODO: 27.09.2022 прописать метод
+    /**
+     * Выдача списка событий по заданным критериям поиска.
+     *
+     * @param users List<Integer>
+     * @param states List<String>
+     * @param categories List<Integer>
+     * @param rangeStart String
+     * @param rangeEnd String
+     * @param from int
+     * @param size int
+     * @return List<EventFullDto>
+     */
     @Override
     @Transactional
     public List<EventFullDto> getEvents(List<Integer> users, List<String> states, List<Integer> categories,
@@ -83,10 +93,10 @@ public class EventAdminServiceImpl implements EventAdminService {
             if (users.size() > 1) {
                 for (int i = 1; i < categories.size(); i++) {
                     userValidation(Long.valueOf(users.get(i)));
-                    builder.append(", " + users.get(i));
+                    builder.append(", ").append(users.get(i));
                 }
             }
-            sb.append("initiator_id IN (" + builder + ") ");
+            sb.append("initiator_id IN (").append(builder).append(") ");
         }
 
         if (categories.size() > 0) {
@@ -96,10 +106,10 @@ public class EventAdminServiceImpl implements EventAdminService {
             if (categories.size() > 1) {
                 for (int i = 1; i < categories.size(); i++) {
                     categoryValidation(Long.valueOf(categories.get(i)));
-                    builder.append(", " + categories.get(i));
+                    builder.append(", ").append(categories.get(i));
                 }
             }
-            sb.append("AND category_id IN (" + builder + ") ");
+            sb.append("AND category_id IN (").append(builder).append(") ");
         }
 
         if (start != null || (start == null && end == null)) {
@@ -114,14 +124,14 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (states.size() > 0) {
             stateValidation(states.get(0));
             StringBuilder builder = new StringBuilder();
-            builder.append("'" + states.get(0) + "'");
+            builder.append("'").append(states.get(0)).append("'");
             if (states.size() > 1) {
                 for (int i = 1; i < states.size(); i++) {
                     stateValidation(states.get(i));
-                    builder.append("OR state LIKE '" + states.get(i) + "'");
+                    builder.append("OR state LIKE '").append(states.get(i)).append("'");
                 }
             }
-            sb.append("AND state LIKE " + builder + " ");
+            sb.append("AND state LIKE ").append(builder).append(" ");
         }
 
         if (sb.toString().contains("WHERE AND")) {
@@ -130,9 +140,18 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         String sqlQuery = String.valueOf(sb);
 
-        return statistics.getListEventFullDtoWithViews(storage.getEvents(sqlQuery));
+        List<EventFullDto> dtos = statistics.getListEventFullDtoWithViews(storage.getEvents(sqlQuery));
+        log.info("Администратору выдан список событий");
+        return dtos;
     }
 
+    /**
+     * Обновление события администратором
+     *
+     * @param eventId Long
+     * @param updateEventRequest UpdateEventRequest
+     * @return EventFullDto
+     */
     @Override
     @Transactional
     public EventFullDto updateEvent(Long eventId, UpdateEventRequest updateEventRequest) {
@@ -164,17 +183,20 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (updateEventRequest.getTitle() != null) {
             event.setTitle(updateEventRequest.getTitle());
         }
-//        System.out.println('\n');
-//        System.out.println('\n');
-//        System.out.println(event.getAnnotation());
-//        System.out.println('\n');
-//        System.out.println('\n');
 
-        return statistics.getEventFullDtoWithViews(eventFullMapper.toEventFullDto(eventRepository.save(event)));
-//       return eventFullMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto dto = statistics.getEventFullDtoWithViews(eventFullMapper.toEventFullDto(eventRepository.save(event)));
+        log.info("Событие с id={} обновлено администратором", dto.getId());
+        return dto;
     }
 
+    /**
+     * Опубликование события
+     *
+     * @param eventId Long
+     * @return EventFullDto
+     */
     @Override
+    @Transactional
     public EventFullDto publishEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
@@ -185,39 +207,69 @@ public class EventAdminServiceImpl implements EventAdminService {
             throw new MyValidationException("Обновлено может быть только событие, до наступления которого осталось больше часа");
         }
         event.setState(State.PUBLISHED);
-        return eventFullMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto dto = eventFullMapper.toEventFullDto(eventRepository.save(event));
+        log.info("Событие с id={} опубликовано", eventId);
+        return dto;
     }
 
+    /**
+     * Отклонение события
+     *
+     * @param eventId Long
+     * @return EventFullDto
+     */
     @Override
+    @Transactional
     public EventFullDto rejectEvent(Long eventId) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (event.getState().equals(State.PUBLISHED)) {
             throw new MyValidationException("Опубликованные события не могут быть отклонены");
         }
-//        event.setState(State.REJECTED);
         event.setState(State.CANCELED);
-        return eventFullMapper.toEventFullDto(eventRepository.save(event));
+        EventFullDto dto = eventFullMapper.toEventFullDto(eventRepository.save(event));
+        log.info("Событие с id={} отклонено", eventId);
+        return dto;
     }
 
+    /**
+     * Проверка наличия события в базе по id
+     *
+     * @param id Long
+     */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
             throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
 
+    /**
+     * Проверка наличия категории в базе по id
+     *
+     * @param id Long
+     */
     private void categoryValidation(Long id) {
         if (categoryRepository.findById(id).isEmpty()) {
             throw new MyNotFoundException(String.format("Категория с id= '%s' не найдена", id));
         }
     }
 
+    /**
+     * Проверка наличия пользователя в базе по id
+     *
+     * @param id Long
+     */
     private void userValidation(Long id) {
         if (userRepository.findById(id).isEmpty()) {
             throw new MyNotFoundException(String.format("Пользователь с id= '%s' не найден", id));
         }
     }
 
+    /**
+     * Валидация поля state у события
+     *
+     * @param s String
+     */
     private void stateValidation(String s) {
         State state = converter.convert(s);
         if (state == State.UNSUPPORTED_STATE) {

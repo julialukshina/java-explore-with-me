@@ -33,14 +33,14 @@ public class HitClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getStats(String start, String end, List<String> uris, Boolean unique) {
-        StringBuilder sb=new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         sb.append(uris.get(0));
-        if(uris.size()>1){
-            for(int i=1; i< uris.size(); i++){
-                sb.append(","+ uris.get(i));
+        if (uris.size() > 1) {
+            for (int i = 1; i < uris.size(); i++) {
+                sb.append(",").append(uris.get(i));
             }
         }
-        String uri=String.valueOf(sb);
+        String uri = String.valueOf(sb);
         Map<String, Object> parameters = Map.of(
                 "start", start,
                 "end", end,

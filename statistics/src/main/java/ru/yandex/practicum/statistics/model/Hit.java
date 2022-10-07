@@ -23,6 +23,6 @@ public class Hit {
     String app;
     @Column(name = "ip")
     String ip;
-    @Column(name="timestamp")
+    @Column(name = "timestamp")
     LocalDateTime timestamp;
 }

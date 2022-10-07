@@ -2,8 +2,6 @@ package ru.yandex.practicum.service.dto.statistics;
 
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @ToString

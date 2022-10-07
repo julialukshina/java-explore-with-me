@@ -1,10 +1,10 @@
 package ru.yandex.practicum.service.services.events;
 
-import ru.yandex.practicum.service.dto.ParticipationRequestDto;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
 import ru.yandex.practicum.service.dto.events.NewEventDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
+import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 
 import java.util.List;
 

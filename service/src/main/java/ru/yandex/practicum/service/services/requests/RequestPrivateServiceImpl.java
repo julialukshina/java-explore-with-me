@@ -2,17 +2,15 @@ package ru.yandex.practicum.service.services.requests;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.service.dto.ParticipationRequestDto;
+import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.enums.State;
 import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
 import ru.yandex.practicum.service.exeptions.MyValidationException;
-import ru.yandex.practicum.service.mappers.RequestMapper;
+import ru.yandex.practicum.service.mappers.requests.RequestMapper;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.models.Request;
-import ru.yandex.practicum.service.repositories.CategoryRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.RequestRepository;
 import ru.yandex.practicum.service.repositories.UserRepository;
@@ -27,55 +25,46 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
 
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
-    private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
-    @Lazy
-    @Autowired
-    RequestMapper requestMapper;
 
     @Autowired
     public RequestPrivateServiceImpl(UserRepository userRepository, EventRepository eventRepository,
-                                     CategoryRepository categoryRepository, RequestRepository requestRepository) {
+                                     RequestRepository requestRepository) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
-        this.categoryRepository = categoryRepository;
         this.requestRepository = requestRepository;
     }
 
-
-    private void userValidation(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Пользователь с id = '%s' не найден", id));
-        }
-    }
-
-    private void eventValidation(Long id) {
-        if (!eventRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
-        }
-    }
-
-    private void requestValidation(Long reqId) {
-        if (!requestRepository.existsById(reqId)) {
-            throw new MyNotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", reqId));
-        }
-    }
-
+    /**
+     * Выдача списка запросов на участие пользователя
+     *
+     * @param userId Long
+     * @return List<ParticipationRequestDto>
+     */
     @Override
     public List<ParticipationRequestDto> getRequestsOfUser(Long userId) {
         userValidation(userId);
-        return requestRepository.findByRequesterId(userId).stream()
-                .map(request -> requestMapper.toRequestDto(request))
+        List<ParticipationRequestDto> dto = requestRepository.findByRequesterId(userId).stream()
+                .map(RequestMapper::toRequestDto)
                 .collect(Collectors.toList());
+        log.info("Пользователю с id={} предоставлен список его заявок на участие в событиях", userId);
+        return dto;
     }
 
+    /**
+     * Создание заявки на участие в событии
+     *
+     * @param userId  Long
+     * @param eventId Long
+     * @return ParticipationRequestDto
+     */
     @Override
     public ParticipationRequestDto postRequest(Long userId, Long eventId) {
         userValidation(userId);
         eventValidation(eventId);
         long eventConfirmedRequest = 0;
-        if(requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED) != null){
-            eventConfirmedRequest=requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
+        if (requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED) != null) {
+            eventConfirmedRequest = requestRepository.countByEventIdAndStatus(eventId, Status.CONFIRMED);
         }
 
         if (requestRepository.findByEventIdAndRequesterId(eventId, userId) != null) {
@@ -95,9 +84,18 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         if (!event.isRequestModeration()) {
             request.setStatus(Status.CONFIRMED);
         }
-        return requestMapper.toRequestDto(requestRepository.save(request));
+        ParticipationRequestDto dto = RequestMapper.toRequestDto(requestRepository.save(request));
+        log.info("Заявка с id={} создана", dto.getId());
+        return dto;
     }
 
+    /**
+     * Отмена заявки на участие в событии
+     *
+     * @param userId    Long
+     * @param requestId Long
+     * @return ParticipationRequestDto
+     */
     @Override
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
         requestValidation(requestId);
@@ -107,6 +105,41 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
             throw new MyValidationException("Только пользователь, создавший заявку, может ее отменить");
         }
         request.setStatus(Status.CANCELED);
-        return requestMapper.toRequestDto(requestRepository.save(request));
+        ParticipationRequestDto dto = RequestMapper.toRequestDto(requestRepository.save(request));
+        log.info("Заявка на участие в событии с id={} отменена пользователем с id={}", requestId, userId);
+        return dto;
+    }
+
+    /**
+     * Проверка наличия пользователя в базе по id
+     *
+     * @param id Long
+     */
+    private void userValidation(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new MyNotFoundException(String.format("Пользователь с id = '%s' не найден", id));
+        }
+    }
+
+    /**
+     * Проверка наличия события в базе по id
+     *
+     * @param id Long
+     */
+    private void eventValidation(Long id) {
+        if (!eventRepository.existsById(id)) {
+            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
+        }
+    }
+
+    /**
+     * Проверка наличия заявки на участие в событии в базе по id
+     *
+     * @param id Long
+     */
+    private void requestValidation(Long id) {
+        if (!requestRepository.existsById(id)) {
+            throw new MyNotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", id));
+        }
     }
 }

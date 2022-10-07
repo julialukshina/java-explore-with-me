@@ -7,16 +7,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class EndpointHitMapper {
-   static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    public static EndpointHit toEndpointHit(Hit hit){
-        return new EndpointHit(hit.getId(),
-                hit.getUri(),
-                hit.getApp(),
-                hit.getIp(),
-                hit.getTimestamp().toString());
-    }
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static Hit toHit(EndpointHit endpointHit){
+    public static Hit toHit(EndpointHit endpointHit) {
         return new Hit(endpointHit.getId(),
                 endpointHit.getUri(),
                 endpointHit.getApp(),

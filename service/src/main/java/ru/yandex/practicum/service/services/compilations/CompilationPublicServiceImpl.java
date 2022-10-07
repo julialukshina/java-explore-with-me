@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.MyPageable;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.mappers.CompilationMapper;
+import ru.yandex.practicum.service.mappers.compilations.CompilationMapper;
 import ru.yandex.practicum.service.repositories.CompilationRepository;
 
 import java.util.List;
@@ -28,6 +28,14 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
         this.repository = repository;
     }
 
+    /**
+     * Выдача списка подборки. Возможный параметр - закрепленность подборки
+     *
+     * @param pinned Boolean
+     * @param from int
+     * @param size int
+     * @return List<CompilationDto>
+     */
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
         Pageable pageable = MyPageable.of(from, size);
@@ -36,16 +44,26 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
                     .map(compilation -> mapper.toCompilationDto(compilation))
                     .collect(Collectors.toList());
         }
-        return repository.findByPinned(pinned, pageable).stream()
+        List<CompilationDto> dtos = repository.findByPinned(pinned, pageable).stream()
                 .map(compilation -> mapper.toCompilationDto(compilation))
                 .collect(Collectors.toList());
+        log.info("Выдан список подборок");
+        return dtos;
     }
 
+    /**
+     * Выдача подборки по id
+     *
+     * @param compId Long
+     * @return CompilationDto
+     */
     @Override
     public CompilationDto getCompilationById(Long compId) {
         if (!repository.existsById(compId)) {
             throw new MyNotFoundException(String.format("The compilation with id= '%s' is not found", compId));
         }
-        return mapper.toCompilationDto(repository.findById(compId).get());
+        CompilationDto dto = mapper.toCompilationDto(repository.findById(compId).get());
+        log.info("Подборка с id={} выдана", compId);
+        return dto;
     }
 }

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.service.errors;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -14,6 +15,7 @@ import java.util.List;
 @EqualsAndHashCode
 @NoArgsConstructor
 public class ApiError {
+    @JsonIgnore
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private String message;
     private String reason;

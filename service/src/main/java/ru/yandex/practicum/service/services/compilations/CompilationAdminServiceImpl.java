@@ -5,19 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
-import ru.yandex.practicum.service.dto.events.EventShortDto;
-import ru.yandex.practicum.service.dto.statistics.ViewStats;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.mappers.CompilationMapper;
+import ru.yandex.practicum.service.mappers.compilations.CompilationMapper;
 import ru.yandex.practicum.service.models.Compilation;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.repositories.CompilationRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 
-import java.util.*;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -27,6 +24,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     private final CompilationRepository compilationRepository;
     @Lazy
     private final CompilationMapper compilationMapper;
+
     @Autowired
     public CompilationAdminServiceImpl(EventRepository eventRepository,
                                        CompilationRepository compilationRepository,
@@ -36,6 +34,13 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         this.compilationMapper = compilationMapper;
     }
 
+    /**
+     * Создание новой подборки
+     *
+     * @param dto NewCompilationDto
+     * @return CompilationDto
+     */
+
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
@@ -44,17 +49,29 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             eventValidation(id);
         }
         CompilationDto compilationDto = compilationMapper.toCompilationDto(compilationRepository.save(compilationMapper.toCompilationFromNew(dto)));
-
+        log.info("Категория с id={} создана", compilationDto.getId());
         return compilationDto;
     }
 
+    /**
+     * Удаление подборки по id
+     *
+     * @param compId Long
+     */
     @Override
     @Transactional
     public void deleteCompilation(Long compId) {
         compilationValidation(compId);
         compilationRepository.deleteById(compId);
+        log.info("Категория с id={} удалена", compId);
     }
 
+    /**
+     * Удаление события из подборки
+     *
+     * @param compId Long
+     * @param eventId Long
+     */
     @Override
     @Transactional
     public void deleteEventFromCompilation(Long compId, Long eventId) {
@@ -67,8 +84,15 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             compilation.setEvents(events);
             compilationRepository.save(compilation);
         }
+        log.info("Событие с id={} удалено из подборки с id={}", eventId, compId);
     }
 
+    /**
+     * Добавление события в подборку
+     *
+     * @param compId Long
+     * @param eventId Long
+     */
     @Override
     @Transactional
     public void addEventFromCompilation(Long compId, Long eventId) {
@@ -80,9 +104,15 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             events.add(eventRepository.findById(eventId).get());
             compilation.setEvents(events);
             compilationRepository.save(compilation);
+            log.info("Событие с id={} добавлено из подборки с id={}", eventId, compId);
         }
     }
 
+    /**
+     * Открепление подборки
+     *
+     * @param compId Long
+     */
     @Override
     @Transactional
     public void unpinCompilation(Long compId) {
@@ -92,8 +122,14 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             compilation.setPinned(false);
             compilationRepository.save(compilation);
         }
+        log.info("Подборка с id={} откреплена", compId);
     }
 
+    /**
+     * Закрепление подборки
+     *
+     * @param compId Long
+     */
     @Override
     @Transactional
     public void pinCompilation(Long compId) {
@@ -103,14 +139,24 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
             compilation.setPinned(true);
             compilationRepository.save(compilation);
         }
+        log.info("Подборка с id={} закреплена", compId);
     }
 
+    /**
+     * Проверка наличия события в базе по id
+     *
+     * @param id Long
+     */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
             throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
-
+    /**
+     * Проверка наличия подборки в базе по id
+     *
+     * @param id Long
+     */
 
     private void compilationValidation(Long id) {
         if (!compilationRepository.existsById(id)) {

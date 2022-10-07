@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.MyPageable;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.mappers.CategoryMapper;
+import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
 
 import java.util.List;
@@ -24,19 +24,36 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
         this.repository = repository;
     }
 
+    /**
+     * Выдача списка категорий
+     *
+     * @param from int
+     * @param size int
+     * @return List<CategoryDto>
+     */
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
         Pageable pageable = MyPageable.of(from, size);
-        return repository.findAll(pageable).stream()
+        List<CategoryDto> categoryDtos = repository.findAll(pageable).stream()
                 .map(CategoryMapper::toCategoryDto)
                 .collect(Collectors.toList());
+        log.info("Выдан список категорий");
+        return categoryDtos;
     }
 
+    /**
+     * Выдача категории по id
+     *
+     * @param catId Long
+     * @return CategoryDto
+     */
     @Override
     public CategoryDto getCategoryById(Long catId) {
         if (!repository.existsById(catId)) {
-            throw new MyNotFoundException(String.format("The category with id = '%s' is not found", catId));
+            throw new MyNotFoundException(String.format("Категория с id = '%s' не найдена", catId));
         }
-        return CategoryMapper.toCategoryDto(repository.findById(catId).get());
+        CategoryDto dto = CategoryMapper.toCategoryDto(repository.findById(catId).get());
+        log.info("Предоставлена категория с id = {}", catId);
+        return dto;
     }
 }

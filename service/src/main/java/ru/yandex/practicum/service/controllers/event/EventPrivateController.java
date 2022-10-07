@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.service.dto.ParticipationRequestDto;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
 import ru.yandex.practicum.service.dto.events.NewEventDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
+import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.services.events.EventPrivateService;
 
 import javax.validation.constraints.Positive;

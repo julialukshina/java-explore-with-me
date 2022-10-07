@@ -17,12 +17,6 @@ public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    /**
-     * возможно, так не сработает, плюс придется доработать переопределенные методы
-     */
-//    @Column(columnDefinition = "events_id[]")
-//    @Type(type = "models/CustomIntegerArrayType.java")
-//    private Long[] events;
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "Events_Compilations", joinColumns = @JoinColumn(name = "compilation_id"),
             inverseJoinColumns = @JoinColumn(name = "event_id"))

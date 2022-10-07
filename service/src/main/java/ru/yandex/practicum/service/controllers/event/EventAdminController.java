@@ -8,7 +8,6 @@ import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.services.events.EventAdminService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -32,7 +31,7 @@ public class EventAdminController {
                                         @RequestParam(name = "rangeStart", required = false) String rangeStart,
                                         @RequestParam(name = "rangeEnd", required = false) String rangeEnd,
                                         @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
-                                        @RequestParam(name = "size", defaultValue = "10") @Positive int size, HttpServletRequest request) {
+                                        @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
 
         return service.getEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }

@@ -13,9 +13,13 @@ import ru.yandex.practicum.service.mappers.events.EventFullMapper;
 import ru.yandex.practicum.service.mappers.events.EventShortMapper;
 import ru.yandex.practicum.service.models.Event;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -27,9 +31,10 @@ public class Statistics {
     private final EventFullMapper eventFullMapper;
     @Lazy
     private final EventShortMapper eventShortMapper;
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String startStat = LocalDateTime.now().minusDays(30).format(formatter);
     private final String endStat = LocalDateTime.now().plusDays(30).format(formatter);
+    private final Boolean unique = false;
 
     @Autowired
     public Statistics(HitClient hitClient, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper) {
@@ -38,40 +43,29 @@ public class Statistics {
         this.eventShortMapper = eventShortMapper;
     }
 
-    public List<EventShortDto> getListEventShortDtoWithViews(List<Event> events){
+    /**
+     * Выдача списка EventShortDto c заполненной статистикой
+
+     * @param events List<Event>
+     * @return List<EventShortDto>
+     */
+    @Transactional
+    public List<EventShortDto> getListEventShortDtoWithViews(List<Event> events) {
         List<String> uris = new ArrayList<>();
         Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         List<EventShortDto> eventDtos = events.stream()
                 .map(eventShortMapper::toEventShortDto)
                 .collect(Collectors.toList());
-        for (EventShortDto dto:
+        for (EventShortDto dto :
                 eventDtos) {
-            StringBuilder stringBuilder=new StringBuilder();
-            stringBuilder.append("/events/"+dto.getId());
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("/events/").append(dto.getId());
             uris.add(String.valueOf(stringBuilder));
             uriEventDtos.put(String.valueOf(stringBuilder), dto);
         }
-
-        List <ViewStats> views = new ArrayList<>();
-        try {
-            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
-                if (stats != null && stats.size() > 0) {
-                    for (Map<String, Object> s:
-                            stats) {
-                        ViewStats viewStats = new ViewStats(s.get("uri").toString(),
-                                s.get("app").toString(),
-                                ((Number)s.get("hits")).longValue());
-                        views.add(viewStats);
-                    }
-                }
-            }
-        } catch (Exception ex) {
-            ex.getMessage();
-        }
-        if(!views.isEmpty()){
-            for (ViewStats view:views) {
+        List<ViewStats> views = getViewStats(startStat, endStat, uris, unique);
+        if (!views.isEmpty()) {
+            for (ViewStats view : views) {
                 EventShortDto dto = uriEventDtos.get(view.getUri());
                 dto.setViews(view.getHits());
                 uriEventDtos.put(view.getUri(), dto);
@@ -80,94 +74,79 @@ public class Statistics {
             eventDtos.addAll(uriEventDtos.values());
         }
 
-//        eventDtos.clear();
-//        List<ViewStats> views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false);
-//        for (ViewStats view:
-//                views) {
-//            EventShortDto dto = uriEventDtos.get(view.getUri());
-//            dto.setViews(view.getHits());
-//            eventDtos.add(dto);
-//        }
         return eventDtos;
     }
 
-    public EventFullDto getEventFullDtoWithViews(EventFullDto dto){
-        String uri = "/events/"+dto.getId();
-        List <String> uris = new ArrayList<>();
+    /**
+     * Выдача EventFullDto c заполненной статистикой
+     *
+     * @param dto EventFullDto
+     * @return EventFullDto
+     */
+    @Transactional
+    public EventFullDto getEventFullDtoWithViews(EventFullDto dto) {
+        String uri = "/events/" + dto.getId();
+        List<String> uris = new ArrayList<>();
         uris.add(uri);
         try {
             ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
                 if (stats != null && stats.size() > 0) {
-                    dto.setViews(((Number)stats.get(0).get("hits")).longValue());
-//                    for (Map<String, Object> s:
-//                            stats) {
-//                        ViewStats viewStats = new ViewStats(s.get("uri").toString(),
-//                                s.get("app").toString(),
-//                                ((Number)s.get("hits")).longValue());
-//                        views.add(viewStats);
-//                    }
+                    dto.setViews(((Number) stats.get(0).get("hits")).longValue());
                 }
             }
         } catch (Exception ex) {
             ex.getMessage();
         }
-//        List <ViewStats> views = (List<ViewStats>)hitClient.getStats(startStat, endStat, uris, false);
-//        if(!views.isEmpty()){
-//            dto.setViews(views.get(0).getHits());
-//        }
         return dto;
     }
 
-    public List<EventFullDto> getListEventFullDtoWithViews(List<Event> events){
+    /**
+     * Выдача списка EventFullDto c заполненной статистикой
+     *
+     * @param events List<Event>
+     * @return List<EventFullDto>
+     */
+    @Transactional
+    public List<EventFullDto> getListEventFullDtoWithViews(List<Event> events) {
         List<String> uris = new ArrayList<>();
         Map<String, EventFullDto> uriEventDtos = new HashMap<>();
         List<EventFullDto> eventDtos = events.stream()
                 .map(eventFullMapper::toEventFullDto)
                 .collect(Collectors.toList());
-        for (EventFullDto dto:
+        for (EventFullDto dto :
                 eventDtos) {
-            StringBuilder stringBuilder=new StringBuilder();
-            stringBuilder.append("/events/"+dto.getId());
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("/events/").append(dto.getId());
             uris.add(String.valueOf(stringBuilder));
             uriEventDtos.put(String.valueOf(stringBuilder), dto);
         }
-//        LinkedHashMap <String, Object> views = (LinkedHashMap<String, Object>) hitClient.getStats(startStat, endStat, uris, false).getBody();
-     //   List<ViewStats> views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false);
-//        List<ViewStats> views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false).getBody();
-//if(!views.isEmpty()){
-//    for (ViewStats view:views) {
-//        EventFullDto dto = uriEventDtos.get(view.getUri());
-//        dto.setViews(view.getHits());
-//        uriEventDtos.put(view.getUri(), dto);
-//    }
-//    eventDtos.clear();
-//    eventDtos.addAll(uriEventDtos.values());
-//}
-//        ((LinkedHashMap) hitClient.getStats(startStat, endStat, uris, false).getBody()).get("hits");
-//        List<Object> objects = Arrays.asList(hitClient.getStats(startStat, endStat, uris, false).getBody());
-//                List<String> strings = new ArrayList<>();
-//        for (Object o:
-//             objects) {
-//            strings.add(o.toString());
-//        }
-//        List<ViewStats> views = new ArrayList<>();
-//        for (String s:
-//             strings) {
-//            views.add(serializeViewStats(s));
-//        }
-        List <ViewStats> views = new ArrayList<>();
+        List<ViewStats> views = getViewStats(startStat, endStat, uris, unique);
+        if (!views.isEmpty()) {
+            for (ViewStats view : views) {
+                EventFullDto dto = uriEventDtos.get(view.getUri());
+                dto.setViews(view.getHits());
+                uriEventDtos.put(view.getUri(), dto);
+            }
+            eventDtos.clear();
+            eventDtos.addAll(uriEventDtos.values());
+        }
+        return eventDtos;
+    }
+
+    private List<ViewStats> getViewStats(String startStat, String endStat, List<String> uris, boolean unique) {
+        List<ViewStats> views = new ArrayList<>();
         try {
-            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
+            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, unique);
             if (response.getStatusCode() == HttpStatus.OK) {
                 List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
                 if (stats != null && stats.size() > 0) {
-                    for (Map<String, Object> s:
-                         stats) {
+                    for (Map<String, Object> s :
+                            stats) {
                         ViewStats viewStats = new ViewStats(s.get("uri").toString(),
                                 s.get("app").toString(),
-                                ((Number)s.get("hits")).longValue());
+                                ((Number) s.get("hits")).longValue());
                         views.add(viewStats);
                     }
                 }
@@ -175,28 +154,6 @@ public class Statistics {
         } catch (Exception ex) {
             ex.getMessage();
         }
-if(!views.isEmpty()){
-    for (ViewStats view:views) {
-        EventFullDto dto = uriEventDtos.get(view.getUri());
-        dto.setViews(view.getHits());
-        uriEventDtos.put(view.getUri(), dto);
+        return views;
     }
-    eventDtos.clear();
-    eventDtos.addAll(uriEventDtos.values());
-}
-        return eventDtos;
-    }
-
-//    private ViewStats serializeViewStats(String s){
-//        String[] m = s.split(",");
-//        String uri=m[0].substring(4);
-//        String app=m[1].substring(4);
-//        Long hits = Long.parseLong(m[2].substring(6));
-//        System.out.println('\n');
-//        System.out.println('\n');
-//        System.out.println(uri + "     " + app+ "     " + hits);
-//        System.out.println('\n');
-//        System.out.println('\n');
-//        return new ViewStats(uri, app, hits);
-//    }
 }

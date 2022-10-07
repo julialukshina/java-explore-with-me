@@ -19,7 +19,8 @@ import java.util.List;
 public class StatisticsController {
 
     private final StatisticsService service;
-@Autowired
+
+    @Autowired
     public StatisticsController(StatisticsService service) {
         this.service = service;
     }
@@ -30,10 +31,10 @@ public class StatisticsController {
     }
 
     @GetMapping("/stats")
-    public List<ViewStats> getStatistics(@RequestParam(name="start") @NotNull String start,
-                                         @RequestParam(name="end") @NotNull String end,
-                                         @RequestParam(name="uris") List<String> uris,
-                                         @RequestParam(name = "unique", defaultValue = "false") Boolean unique){
-    return service.getStatistics(start, end, uris, unique);
+    public List<ViewStats> getStatistics(@RequestParam(name = "start") @NotNull String start,
+                                         @RequestParam(name = "end") @NotNull String end,
+                                         @RequestParam(name = "uris") List<String> uris,
+                                         @RequestParam(name = "unique", defaultValue = "false") Boolean unique) {
+        return service.getStatistics(start, end, uris, unique);
     }
 }
