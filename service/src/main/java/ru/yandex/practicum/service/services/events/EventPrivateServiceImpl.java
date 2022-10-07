@@ -60,8 +60,9 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public List<EventShortDto> getEventsOfUser(Long userId, int from, int size) {
         userValidation(userId);
         Pageable pageable = MyPageable.of(from, size);
+//        List<Event> events = eventRepository.findByInitiatorId(userId, pageable).
 
-        return statistics.getListEventShortDtoWithViews((List<Event>) eventRepository.findByInitiatorId(userId, pageable));
+        return statistics.getListEventShortDtoWithViews(eventRepository.findByInitiatorId(userId, pageable).toList());
 
 //        return eventRepository.findByInitiator(userId, pageable).stream()
 //                .map(EventShortMapper::toEventShortDto)
@@ -185,7 +186,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public ParticipationRequestDto confirmRequest(Long userId, Long eventId, Long reqId) {
         userValidation(userId);
         eventValidation(eventId);
-        initiatorValidation(userId, eventId);
+        initiatorValidationWithEventId(userId, eventId);
         requestValidation(reqId);
         eventAndInitiatorRequestValidation(reqId, eventId, userId);
         Request request = requestRepository.findById(reqId).get();
@@ -197,7 +198,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public ParticipationRequestDto rejectRequest(Long userId, Long eventId, Long reqId) {
         userValidation(userId);
         eventValidation(eventId);
-        initiatorValidation(userId, eventId);
+        initiatorValidationWithEventId(userId, eventId);
         eventAndInitiatorRequestValidation(reqId, eventId, userId);
         Request request = requestRepository.findById(reqId).get();
         request.setStatus(Status.REJECTED);
@@ -216,8 +217,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         }
     }
 
-    private void initiatorValidation(Long userId, Long eventId) {
+    private void initiatorValidationWithEventId(Long userId, Long eventId) {
         if (userId != eventRepository.findById(eventId).get().getInitiator().getId()) {
+            throw new MyValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
+        }
+    }
+    private void initiatorValidation(Long userId, Long initiatorId) {
+        if (userId != initiatorId) {
             throw new MyValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
         }
     }

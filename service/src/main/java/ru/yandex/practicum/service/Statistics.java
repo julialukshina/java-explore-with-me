@@ -51,14 +51,43 @@ public class Statistics {
             uris.add(String.valueOf(stringBuilder));
             uriEventDtos.put(String.valueOf(stringBuilder), dto);
         }
-        eventDtos.clear();
-        List<ViewStats> views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false);
-        for (ViewStats view:
-                views) {
-            EventShortDto dto = uriEventDtos.get(view.getUri());
-            dto.setViews(view.getHits());
-            eventDtos.add(dto);
+
+        List <ViewStats> views = new ArrayList<>();
+        try {
+            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
+                if (stats != null && stats.size() > 0) {
+                    for (Map<String, Object> s:
+                            stats) {
+                        ViewStats viewStats = new ViewStats(s.get("uri").toString(),
+                                s.get("app").toString(),
+                                ((Number)s.get("hits")).longValue());
+                        views.add(viewStats);
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            ex.getMessage();
         }
+        if(!views.isEmpty()){
+            for (ViewStats view:views) {
+                EventShortDto dto = uriEventDtos.get(view.getUri());
+                dto.setViews(view.getHits());
+                uriEventDtos.put(view.getUri(), dto);
+            }
+            eventDtos.clear();
+            eventDtos.addAll(uriEventDtos.values());
+        }
+
+//        eventDtos.clear();
+//        List<ViewStats> views = (List<ViewStats>) hitClient.getStats(startStat, endStat, uris, false);
+//        for (ViewStats view:
+//                views) {
+//            EventShortDto dto = uriEventDtos.get(view.getUri());
+//            dto.setViews(view.getHits());
+//            eventDtos.add(dto);
+//        }
         return eventDtos;
     }
 

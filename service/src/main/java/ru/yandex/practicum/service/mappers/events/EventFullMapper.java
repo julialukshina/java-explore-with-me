@@ -61,7 +61,8 @@ public class EventFullMapper {
                 UserShortDtoMapper.toUser(dto.getInitiator()),
                 dto.isPaid(),
                 dto.getParticipantLimit(),
-                LocalDateTime.parse(dto.getPublishedOn(), formatter),
+                dto.getPublishedOn() != null ?  LocalDateTime.parse(dto.getPublishedOn(), formatter) : null,
+//                LocalDateTime.parse(dto.getPublishedOn(), formatter),
                 dto.isRequestModeration(),
                 dto.getTitle(),
                 converter.convert(dto.getState()));

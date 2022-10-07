@@ -400,10 +400,10 @@ public class EventPublicServiceImpl implements EventPublicService {
 //
 //        Query<Event> query = session.createQuery(cr);
 //        List<Event> results = query.getResultList();
-List<EventShortDto> eventDtos = new ArrayList<>();
-List<String> uris = new ArrayList<>();
-List<ViewStats> views = new ArrayList<>();
-Map<String, EventShortDto> uriEventDtos = new HashMap<>();
+//List<EventShortDto> eventDtos = new ArrayList<>();
+//List<String> uris = new ArrayList<>();
+//List<ViewStats> views = new ArrayList<>();
+//Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         LocalDateTime start = null;
         LocalDateTime end = null;
                 if(rangeStart != null) {
@@ -423,7 +423,7 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM Events WHERE ");
         if(text!=null){
-            sb.append(String.format("upper(annotation) like upper(concat('%s')) or upper(description) like upper(concat( '%s')) ", text, text));
+            sb.append(String.format("(annotation ilike '%%%s%%' or description ilike '%%%s%%') ", text, text));
         }
         if(categories.size()>0){
             StringBuilder builder = new StringBuilder();
@@ -438,7 +438,7 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
             sb.append("AND category_id in (" + builder + ") ");
         }
         if(paid!=null){
-            sb.append(String.format("AND paid='%s' ", paid));
+            sb.append(String.format("AND paid IS %s ", paid));
         }
         if(start != null||(start == null && end ==null)){
             if(start==null){
@@ -451,13 +451,13 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
         }
         // TODO: 04.10.2022 джойнить таблицы
 
-        if(isAvailable){
+//        if(isAvailable){
+//
+//
+//            sb.append("AND participant_limit=0 OR participant_limit > confirmedRequests.size ");
+//        }
 
-
-            sb.append("AND participant_limit=0 OR participant_limit > confirmedRequests.size ");
-        }
-
-       if(sort.equals("EVENT_DATE")){
+       if(sort.equals(Sort.EVENT_DATE)){
            sb.append("ORDER BY event_date ");
        }
 //       if(sort.equals("EVENT_DATE") || sort==null){
@@ -468,11 +468,6 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
            sb.delete(i, i+3);
        }
         String sqlQuery = String.valueOf(sb);
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println(sqlQuery);
-        System.out.println("\n");
-        System.out.println("\n");
 //
 //        eventDtos = storage.getEvents(sqlQuery).stream()
 //                .map(EventShortMapper::toEventShortDto)
@@ -492,60 +487,56 @@ Map<String, EventShortDto> uriEventDtos = new HashMap<>();
 //            dto.setViews(view.getHits());
 //            eventDtos.add(dto);
 //        }
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println(repository.findAll());
-        System.out.println("\n");
-        System.out.println("\n");
-        List<Event> events = storage.getEvents(sqlQuery);
-        System.out.println("\n");
-        System.out.println("\n");
-        System.out.println(events);
-        System.out.println("\n");
-        System.out.println("\n");
-        if(sort.equals("EVENT_DATE") || sort==null){
-            if(isAvailable){
-                return statistics.getListEventShortDtoWithViews(events.stream()
-                        .map(eventFullMapper::toEventFullDto)
-                        .filter(eventFullDto -> eventFullDto.getConfirmedRequests()<eventFullDto.getParticipantLimit() ||
-                                eventFullDto.getParticipantLimit()==0)
-                        .skip(from)
-                        .limit(size)
-                        .map(eventFullMapper::toEvent)
-                        .collect(Collectors.toList()));
-            }else{
-                return statistics.getListEventShortDtoWithViews(events.stream()
-                        .skip(from)
-                        .limit(size)
-                        .collect(Collectors.toList()));
-            }
-        }
 
-   if(sort.equals("VIEWS")){
-       if(isAvailable){
-           return statistics.getListEventShortDtoWithViews(events.stream()
-                   .map(eventFullMapper::toEventFullDto)
-                   .filter(eventFullDto -> eventFullDto.getConfirmedRequests()<eventFullDto.getParticipantLimit() ||
-                           eventFullDto.getParticipantLimit()==0)
-                   .sorted(Comparator.comparing(o->o.getViews()))
-                   .skip(from)
-                   .limit(size)
-                   .map(eventFullMapper::toEvent)
-                   .collect(Collectors.toList()));
-       }else{
-           return  statistics.getListEventShortDtoWithViews(events).stream()
-                   .sorted(Comparator.comparing(o->o.getViews()))
-                   .skip(from)
-                   .limit(size)
-                   .collect(Collectors.toList());
-       }
+        List<Event> events = storage.getEvents(sqlQuery);
+
+        if(!events.isEmpty()){
+            if (sort.equals(Sort.EVENT_DATE) || sort == null) {
+                if (isAvailable) {
+                    return statistics.getListEventShortDtoWithViews(events.stream()
+                            .map(eventFullMapper::toEventFullDto)
+                            .filter(eventFullDto -> eventFullDto.getParticipantLimit() == 0 ||
+                                    eventFullDto.getConfirmedRequests() < eventFullDto.getParticipantLimit())
+                            .skip(from)
+                            .limit(size)
+                            .map(eventFullMapper::toEvent)
+                            .collect(Collectors.toList()));
+                } else {
+                    return statistics.getListEventShortDtoWithViews(events.stream()
+                            .skip(from)
+                            .limit(size)
+                            .collect(Collectors.toList()));
+                }
+            }
+
+            if (sort.equals(Sort.VIEWS)) {
+                if (isAvailable) {
+                    return statistics.getListEventShortDtoWithViews(events.stream()
+                            .map(eventFullMapper::toEventFullDto)
+                            .filter(eventFullDto -> eventFullDto.getConfirmedRequests() < eventFullDto.getParticipantLimit() ||
+                                    eventFullDto.getParticipantLimit() == 0)
+                            .sorted(Comparator.comparing(o -> o.getViews()))
+                            .skip(from)
+                            .limit(size)
+                            .map(eventFullMapper::toEvent)
+                            .collect(Collectors.toList()));
+                } else {
+                    return statistics.getListEventShortDtoWithViews(events).stream()
+                            .sorted(Comparator.comparing(o -> o.getViews()))
+                            .skip(from)
+                            .limit(size)
+                            .collect(Collectors.toList());
+                }
 //       statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery)).stream()
 //               .sorted(Comparator.comparing(o->o.getViews()))
 //               .skip(from)
 //               .limit(size)
 //               .collect(Collectors.toList());
-   }
-return null;
+            }
+        }
+return events.stream()
+        .map(eventShortMapper::toEventShortDto)
+        .collect(Collectors.toList());
   //      return statistics.getListEventShortDtoWithViews(storage.getEvents(sqlQuery));
 //        return storage.getEvents(sqlQuery).stream()
 //                .map(eventShortMapper::toEventShortDto)

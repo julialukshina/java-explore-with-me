@@ -30,16 +30,6 @@ public class CategoryAdminController {
         return service.postCategory(dto);
     }
 
-//    @PostMapping("/admin/categories")
-//    public CategoryDto postCategory(@RequestBody String s) {
-//        String[] a = s.split("\"");
-//        String b = a[3];
-//        NewCategoryDto dto = new NewCategoryDto(b);
-//        System.out.println("зашёл в ручку");
-//        return service.postCategory(dto);
-//    }
-
-
     @DeleteMapping("/admin/categories/{catId}")
     public void deleteCategory(@PathVariable Long catId) {
         service.deleteCategory(catId);

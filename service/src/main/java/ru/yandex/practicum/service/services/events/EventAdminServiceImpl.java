@@ -79,7 +79,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (users.size() > 0) {
             userValidation(Long.valueOf(users.get(0)));
             StringBuilder builder = new StringBuilder();
-            builder.append(categories.get(0));
+            builder.append(users.get(0));
             if (users.size() > 1) {
                 for (int i = 1; i < categories.size(); i++) {
                     userValidation(Long.valueOf(users.get(i)));

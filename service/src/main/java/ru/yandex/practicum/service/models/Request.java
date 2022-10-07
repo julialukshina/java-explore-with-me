@@ -25,7 +25,7 @@ public class Request {
     @JoinColumn(name = "event_id")
     private Event event;
     @ManyToOne
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "requester_id")
     private User requester;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

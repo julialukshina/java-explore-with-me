@@ -35,16 +35,19 @@ public class EventStorage {
     }
 
  public List<Event> getEvents(String sqlQuery){
+//        return jdbcTemplate.queryForList(sqlQuery, Event.class);
        return jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeEvent(rs));
  }
 
     private Event makeEvent(ResultSet rs) throws SQLException {
+
         Long id = rs.getLong("id");
         rs.getTimestamp("created_on");
         String annotation = rs.getString("annotation");
         Long categoryId = rs.getLong("category_id");
         LocalDateTime createdOn = rs.getTimestamp("created_on").toLocalDateTime();
                 //LocalDateTime.parse(rs.getTimestamp("created_on"), formatter);
+       // LocalDateTime createdOn = LocalDateTime.parse(rs.getString("created_on"), formatter);
         String description = rs.getString("description");
         LocalDateTime eventDate = rs.getTimestamp("event_date").toLocalDateTime();
                 //LocalDateTime.parse(rs.getString("event_date"), formatter);
