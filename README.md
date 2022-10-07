@@ -31,3 +31,5 @@
 Проект является дипломной работой по курсу Яндекс.Практикум.Java-разработчик.
 
 Проект подготовлен Лукшиной Юлией (ualukshina@yandex.ru)
+
+Ссылка на pull request: https://github.com/julialukshina/java-explore-with-me/pull/1
