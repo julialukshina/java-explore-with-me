@@ -8,39 +8,39 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.exeptions.MyValidationException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
+import ru.yandex.practicum.service.exeptions.ValidationException;
 
-import javax.validation.ConstraintViolationException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class ControllerAdvice extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<Object> handleConstraintViolationException(ConstraintViolationException e, WebRequest request) {
-        ApiError apiError = new ApiError("could not execute statement; SQL [n/a]; constraint [uq_category_name]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement",
-                "Error occurred");
+public class ServiceExceptionHandler extends ResponseEntityExceptionHandler {
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Object> handleRuntimeException(RuntimeException e, WebRequest request) {
+        ApiError apiError = new ApiError("Не удалось выполнить инструкцию",
+                "Произошла ошибка");
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(MyNotFoundException.class)
-    public ResponseEntity<Object> handleEventNotFoundException(MyNotFoundException e, WebRequest request) {
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Object> handleEventNotFoundException(NotFoundException e, WebRequest request) {
         ApiError apiError = new ApiError();
         apiError.setMessage(e.getMessage());
-        apiError.setReason("The required object was not found.");
+        apiError.setReason("Запрашиваемый объект не найден");
         return new ResponseEntity<>(apiError, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(MyValidationException.class)
-    public ResponseEntity<Object> handleMyValidationException(MyValidationException e, WebRequest request) {
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<Object> handleValidationException(ValidationException e, WebRequest request) {
         ApiError apiError = new ApiError();
         Arrays.stream(e.getStackTrace())
                 .map(StackTraceElement::toString)
                 .forEach(apiError.getErrors()::add);
         apiError.setMessage(e.getMessage());
-        apiError.setReason("For the requested operation the conditions are not met.");
+        apiError.setReason("Не соблюдены условия для запрошенной операции");
         return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
     }
 
@@ -52,8 +52,8 @@ public class ControllerAdvice extends ResponseEntityExceptionHandler {
                 .stream()
                 .map(x -> x.getDefaultMessage())
                 .collect(Collectors.toList());
-        ApiError apiError = new ApiError(errors, "For the requested operation the conditions are not met.",
-                "Only pending or canceled events can be changed");
+        ApiError apiError = new ApiError(errors, "Не соблюдены условия для запрошенной операции.",
+                "Только события со статусом \"PENDING\" и \"CANCELED\" могут изменяться пользователем");
         return new ResponseEntity<>(apiError, status);
     }
 }

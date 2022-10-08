@@ -1,7 +1,12 @@
 package ru.yandex.practicum.service.dto.categories;
 
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -11,11 +16,9 @@ import javax.validation.constraints.NotNull;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class NewCategoryDto {
     @NotNull
     @NotBlank
     private String name;
-
-    public NewCategoryDto() {
-    }
 }

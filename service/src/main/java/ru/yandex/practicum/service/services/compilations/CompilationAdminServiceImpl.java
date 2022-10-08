@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.mappers.compilations.CompilationMapper;
 import ru.yandex.practicum.service.models.Compilation;
 import ru.yandex.practicum.service.models.Event;
@@ -69,7 +69,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     /**
      * Удаление события из подборки
      *
-     * @param compId Long
+     * @param compId  Long
      * @param eventId Long
      */
     @Override
@@ -90,7 +90,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     /**
      * Добавление события в подборку
      *
-     * @param compId Long
+     * @param compId  Long
      * @param eventId Long
      */
     @Override
@@ -149,9 +149,10 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
      */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
+            throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
+
     /**
      * Проверка наличия подборки в базе по id
      *
@@ -160,7 +161,7 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
 
     private void compilationValidation(Long id) {
         if (!compilationRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Подборка с id = '%s' не найдена", id));
+            throw new NotFoundException(String.format("Подборка с id = '%s' не найдена", id));
         }
     }
 }

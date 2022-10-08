@@ -1,6 +1,10 @@
 package ru.yandex.practicum.statistics.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
@@ -8,7 +12,7 @@ import lombok.*;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class ViewStats {
-    String uri;
-    String app;
-    long hits;
+    private String uri;
+    private String app;
+    private long hits;
 }

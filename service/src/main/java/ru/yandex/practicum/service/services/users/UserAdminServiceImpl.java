@@ -2,18 +2,16 @@ package ru.yandex.practicum.service.services.users;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.service.MyPageable;
+import ru.yandex.practicum.service.Pageable;
 import ru.yandex.practicum.service.dto.users.NewUserRequest;
 import ru.yandex.practicum.service.dto.users.UserDto;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.mappers.users.UserMapper;
 import ru.yandex.practicum.service.models.User;
 import ru.yandex.practicum.service.repositories.UserRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +29,8 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     /**
      * Выдача администратору списка пользователей по заданным id
-     * @param ids List<Long>
+     *
+     * @param ids  List<Long>
      * @param from int
      * @param size int
      * @return List<UserDto>
@@ -39,7 +38,7 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Override
     @Transactional
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
-        Pageable pageable = MyPageable.of(from, size);
+        org.springframework.data.domain.Pageable pageable = Pageable.of(from, size);
         List<UserDto> dtos;
         if (!ids.isEmpty()) {
             for (Long id :
@@ -52,7 +51,7 @@ public class UserAdminServiceImpl implements UserAdminService {
             log.info("Администратору выдан список пользователей");
             return dtos;
         }
-        dtos= userRepository.findAll(pageable).stream()
+        dtos = userRepository.findAll(pageable).stream()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
         log.info("Администратору выдан список пользователей");
@@ -61,6 +60,7 @@ public class UserAdminServiceImpl implements UserAdminService {
 
     /**
      * Создание пользователя
+     *
      * @param newUserRequest NewUserRequest
      * @return UserDto
      */
@@ -68,13 +68,14 @@ public class UserAdminServiceImpl implements UserAdminService {
     @Transactional
     public UserDto createUser(NewUserRequest newUserRequest) {
         User user = new User(0, newUserRequest.getName(), newUserRequest.getEmail());
-        UserDto dto= UserMapper.toUserDto(userRepository.save(user));
+        UserDto dto = UserMapper.toUserDto(userRepository.save(user));
         log.info("Пользователь с id={} создан", dto.getId());
         return dto;
     }
 
     /**
      * Удаление пользователя
+     *
      * @param userId Long
      */
     @Override
@@ -92,7 +93,7 @@ public class UserAdminServiceImpl implements UserAdminService {
      */
     private void userValidation(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Пользователь с id = '%s' не найден", id));
+            throw new NotFoundException(String.format("Пользователь с id = '%s' не найден", id));
         }
     }
 

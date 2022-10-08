@@ -1,6 +1,10 @@
 package ru.yandex.practicum.service.dto.compilations;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
 
 import javax.validation.constraints.NotBlank;

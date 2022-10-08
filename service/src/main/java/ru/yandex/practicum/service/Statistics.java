@@ -45,7 +45,7 @@ public class Statistics {
 
     /**
      * Выдача списка EventShortDto c заполненной статистикой
-
+     *
      * @param events List<Event>
      * @return List<EventShortDto>
      */

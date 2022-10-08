@@ -9,10 +9,10 @@ import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.enums.State;
 import ru.yandex.practicum.service.enums.StateEnumConverter;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.exeptions.MyValidationException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.exeptions.StateInvalidException;
 import ru.yandex.practicum.service.exeptions.TimeValidationException;
+import ru.yandex.practicum.service.exeptions.ValidationException;
 import ru.yandex.practicum.service.mappers.events.EventFullMapper;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
@@ -55,13 +55,13 @@ public class EventAdminServiceImpl implements EventAdminService {
     /**
      * Выдача списка событий по заданным критериям поиска.
      *
-     * @param users List<Integer>
-     * @param states List<String>
+     * @param users      List<Integer>
+     * @param states     List<String>
      * @param categories List<Integer>
      * @param rangeStart String
-     * @param rangeEnd String
-     * @param from int
-     * @param size int
+     * @param rangeEnd   String
+     * @param from       int
+     * @param size       int
      * @return List<EventFullDto>
      */
     @Override
@@ -74,14 +74,15 @@ public class EventAdminServiceImpl implements EventAdminService {
             try {
                 start = LocalDateTime.parse(rangeStart, formatter);
             } catch (TimeValidationException e) {
-                e.getMessage();
+                throw new TimeValidationException("Передано некорректное значение для параметра поиска start");
+                //               e.getStackTrace();
             }
         }
         if (rangeEnd != null) {
             try {
                 end = LocalDateTime.parse(rangeEnd, formatter);
             } catch (TimeValidationException e) {
-                e.getMessage();
+                throw new TimeValidationException("Передано некорректное значение для параметра поиска end");
             }
         }
         StringBuilder sb = new StringBuilder();
@@ -112,7 +113,7 @@ public class EventAdminServiceImpl implements EventAdminService {
             sb.append("AND category_id IN (").append(builder).append(") ");
         }
 
-        if (start != null || (start == null && end == null)) {
+        if (start != null || end == null) {
             if (start == null) {
                 start = LocalDateTime.now();
             }
@@ -148,7 +149,7 @@ public class EventAdminServiceImpl implements EventAdminService {
     /**
      * Обновление события администратором
      *
-     * @param eventId Long
+     * @param eventId            Long
      * @param updateEventRequest UpdateEventRequest
      * @return EventFullDto
      */
@@ -201,10 +202,10 @@ public class EventAdminServiceImpl implements EventAdminService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (!event.getState().equals(State.PENDING)) {
-            throw new MyValidationException("Опубликованы могут быть только события,находящиеся в состоянии ожидания публикации");
+            throw new ValidationException("Опубликованы могут быть только события,находящиеся в состоянии ожидания публикации");
         }
         if (event.getEventDate().equals(LocalDateTime.now().plusHours(1))) {
-            throw new MyValidationException("Обновлено может быть только событие, до наступления которого осталось больше часа");
+            throw new ValidationException("Обновлено может быть только событие, до наступления которого осталось больше часа");
         }
         event.setState(State.PUBLISHED);
         EventFullDto dto = eventFullMapper.toEventFullDto(eventRepository.save(event));
@@ -224,7 +225,7 @@ public class EventAdminServiceImpl implements EventAdminService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (event.getState().equals(State.PUBLISHED)) {
-            throw new MyValidationException("Опубликованные события не могут быть отклонены");
+            throw new ValidationException("Опубликованные события не могут быть отклонены");
         }
         event.setState(State.CANCELED);
         EventFullDto dto = eventFullMapper.toEventFullDto(eventRepository.save(event));
@@ -239,7 +240,7 @@ public class EventAdminServiceImpl implements EventAdminService {
      */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
+            throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
 
@@ -250,7 +251,7 @@ public class EventAdminServiceImpl implements EventAdminService {
      */
     private void categoryValidation(Long id) {
         if (categoryRepository.findById(id).isEmpty()) {
-            throw new MyNotFoundException(String.format("Категория с id= '%s' не найдена", id));
+            throw new NotFoundException(String.format("Категория с id= '%s' не найдена", id));
         }
     }
 
@@ -261,7 +262,7 @@ public class EventAdminServiceImpl implements EventAdminService {
      */
     private void userValidation(Long id) {
         if (userRepository.findById(id).isEmpty()) {
-            throw new MyNotFoundException(String.format("Пользователь с id= '%s' не найден", id));
+            throw new NotFoundException(String.format("Пользователь с id= '%s' не найден", id));
         }
     }
 

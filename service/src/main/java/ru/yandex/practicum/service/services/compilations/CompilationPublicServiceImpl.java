@@ -3,11 +3,10 @@ package ru.yandex.practicum.service.services.compilations;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.service.MyPageable;
+import ru.yandex.practicum.service.Pageable;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.mappers.compilations.CompilationMapper;
 import ru.yandex.practicum.service.repositories.CompilationRepository;
 
@@ -32,13 +31,13 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
      * Выдача списка подборки. Возможный параметр - закрепленность подборки
      *
      * @param pinned Boolean
-     * @param from int
-     * @param size int
+     * @param from   int
+     * @param size   int
      * @return List<CompilationDto>
      */
     @Override
     public List<CompilationDto> getCompilations(Boolean pinned, int from, int size) {
-        Pageable pageable = MyPageable.of(from, size);
+        org.springframework.data.domain.Pageable pageable = Pageable.of(from, size);
         if (pinned == null) {
             return repository.findAll(pageable).stream()
                     .map(compilation -> mapper.toCompilationDto(compilation))
@@ -60,7 +59,7 @@ public class CompilationPublicServiceImpl implements CompilationPublicService {
     @Override
     public CompilationDto getCompilationById(Long compId) {
         if (!repository.existsById(compId)) {
-            throw new MyNotFoundException(String.format("The compilation with id= '%s' is not found", compId));
+            throw new NotFoundException(String.format("Подборка с id= '%s' не найдена", compId));
         }
         CompilationDto dto = mapper.toCompilationDto(repository.findById(compId).get());
         log.info("Подборка с id={} выдана", compId);

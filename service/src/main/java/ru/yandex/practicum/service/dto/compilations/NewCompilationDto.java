@@ -1,6 +1,11 @@
 package ru.yandex.practicum.service.dto.compilations;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -11,6 +16,7 @@ import java.util.List;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class NewCompilationDto {
     @NotNull
     @NotBlank
@@ -20,7 +26,4 @@ public class NewCompilationDto {
     private boolean pinned;
     @NotBlank
     private String title;
-
-    public NewCompilationDto() {
-    }
 }

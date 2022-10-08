@@ -13,7 +13,6 @@ import ru.yandex.practicum.service.services.users.UserAdminService;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Component
@@ -22,7 +21,6 @@ public class EventStorage {
     private StateEnumConverter converter = new StateEnumConverter();
     private final UserAdminService userAdminService;
     private final CategoryPublicService categoryPublicService;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     public EventStorage(JdbcTemplate jdbcTemplate,
@@ -56,7 +54,7 @@ public class EventStorage {
         Boolean requestModeration = rs.getBoolean("request_moderation");
         State state = converter.convert(rs.getString("state"));
         String title = rs.getString("title");
-        Event event = new Event(id,
+        return new Event(id,
                 annotation,
                 CategoryMapper.toCategory(categoryPublicService.getCategoryById(categoryId)),
                 createdOn,
@@ -69,7 +67,5 @@ public class EventStorage {
                 requestModeration,
                 title,
                 state);
-
-        return event;
     }
 }

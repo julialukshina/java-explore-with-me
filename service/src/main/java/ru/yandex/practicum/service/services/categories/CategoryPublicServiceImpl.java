@@ -2,11 +2,10 @@ package ru.yandex.practicum.service.services.categories;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.service.MyPageable;
+import ru.yandex.practicum.service.Pageable;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
 
@@ -33,7 +32,7 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
      */
     @Override
     public List<CategoryDto> getCategories(int from, int size) {
-        Pageable pageable = MyPageable.of(from, size);
+        org.springframework.data.domain.Pageable pageable = Pageable.of(from, size);
         List<CategoryDto> categoryDtos = repository.findAll(pageable).stream()
                 .map(CategoryMapper::toCategoryDto)
                 .collect(Collectors.toList());
@@ -50,7 +49,7 @@ public class CategoryPublicServiceImpl implements CategoryPublicService {
     @Override
     public CategoryDto getCategoryById(Long catId) {
         if (!repository.existsById(catId)) {
-            throw new MyNotFoundException(String.format("Категория с id = '%s' не найдена", catId));
+            throw new NotFoundException(String.format("Категория с id = '%s' не найдена", catId));
         }
         CategoryDto dto = CategoryMapper.toCategoryDto(repository.findById(catId).get());
         log.info("Предоставлена категория с id = {}", catId);

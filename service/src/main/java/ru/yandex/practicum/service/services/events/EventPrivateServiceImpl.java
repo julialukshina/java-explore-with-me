@@ -3,9 +3,8 @@ package ru.yandex.practicum.service.services.events;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.service.MyPageable;
+import ru.yandex.practicum.service.Pageable;
 import ru.yandex.practicum.service.Statistics;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
@@ -14,8 +13,8 @@ import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.enums.State;
 import ru.yandex.practicum.service.enums.Status;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.exeptions.MyValidationException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
+import ru.yandex.practicum.service.exeptions.ValidationException;
 import ru.yandex.practicum.service.mappers.events.EventFullMapper;
 import ru.yandex.practicum.service.mappers.requests.RequestMapper;
 import ru.yandex.practicum.service.models.Event;
@@ -58,14 +57,14 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      * Выдача списка событий, созданных пользователем
      *
      * @param userId Long
-     * @param from int
-     * @param size int
+     * @param from   int
+     * @param size   int
      * @return List<EventShortDto>
      */
     @Override
     public List<EventShortDto> getEventsOfUser(Long userId, int from, int size) {
         userValidation(userId);
-        Pageable pageable = MyPageable.of(from, size);
+        org.springframework.data.domain.Pageable pageable = Pageable.of(from, size);
         List<EventShortDto> eventShortDtos = statistics.getListEventShortDtoWithViews(eventRepository.findByInitiatorId(userId, pageable).toList());
         log.info("Пользователю с id={} выдан список созданных им событий", userId);
         return eventShortDtos;
@@ -74,7 +73,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Обновление события пользователем
      *
-     * @param userId Long
+     * @param userId             Long
      * @param updateEventRequest UpdateEventRequest
      * @return EventFullDto
      */
@@ -84,13 +83,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         userValidation(userId);
         eventValidation(updateEventRequest.getEventId());
         if (LocalDateTime.parse(updateEventRequest.getEventDate(), formatter).isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new MyValidationException("Изменение события доступно не менее, чем за два часа до его наступления");
+            throw new ValidationException("Изменение события доступно не менее, чем за два часа до его наступления");
         }
 
         Event event = eventRepository.findById(updateEventRequest.getEventId()).get();
         initiatorValidation(userId, event.getInitiator().getId());
         if (event.getState().equals(State.PUBLISHED)) {
-            throw new MyValidationException("Только отмененные или ожидающие публикации события могут быть обновлены");
+            throw new ValidationException("Только отмененные или ожидающие публикации события могут быть обновлены");
         }
 
         if (updateEventRequest.getAnnotation() != null) {
@@ -106,7 +105,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
             event.setEventDate(LocalDateTime.parse(updateEventRequest.getEventDate(), formatter));
         } else {
             if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new MyValidationException("Событие не может состояться ранее, чем через два часа после его обновления");
+                throw new ValidationException("Событие не может состояться ранее, чем через два часа после его обновления");
             }
         }
         if (updateEventRequest.getPaid() != null) {
@@ -135,7 +134,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Выдача события пользователю по id
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      * @return EventFullDto
      */
@@ -154,7 +153,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      * Создание события
      *
      * @param userId Long
-     * @param dto NewEventDto
+     * @param dto    NewEventDto
      * @return EventFullDto
      */
     @Override
@@ -163,7 +162,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         userValidation(userId);
         LocalDateTime now = LocalDateTime.now();
         if (LocalDateTime.parse(dto.getEventDate(), formatter).isBefore(now.plusHours(2))) {
-            throw new MyValidationException("Событие может быть опубликовано не менее, чем за два часа до его наступления");
+            throw new ValidationException("Событие может быть опубликовано не менее, чем за два часа до его наступления");
         }
         Event event = new Event(0,
                 dto.getAnnotation(),
@@ -186,7 +185,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Отмена события пользователем
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      * @return EventFullDto
      */
@@ -198,7 +197,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
         if (!event.getState().equals(State.PENDING)) {
-            throw new MyValidationException("Только ожидающее модерации событие может быть отменено");
+            throw new ValidationException("Только ожидающее модерации событие может быть отменено");
         }
         event.setState(State.CANCELED);
         EventFullDto dto = eventFullMapper.toEventFullDto(eventRepository.save(event));
@@ -209,7 +208,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Выдача запросов на участие в событии, созданном пользователем
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      * @return List<ParticipationRequestDto>
      */
@@ -229,9 +228,9 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Подтверждение запроса на участие в событии
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param reqId Long
+     * @param reqId   Long
      * @return ParticipationRequestDto
      */
     @Override
@@ -245,6 +244,13 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         Request request = requestRepository.findById(reqId).get();
         request.setStatus(Status.CONFIRMED);
         ParticipationRequestDto dto = RequestMapper.toRequestDto(requestRepository.save(request));
+        EventFullDto eventFullDto = eventFullMapper.toEventFullDto(eventRepository.findById(eventId).get());
+        if (eventFullDto.getParticipantLimit() != 0 && eventFullDto.getConfirmedRequests() == eventFullDto.getParticipantLimit()) {
+            if (requestRepository.existsByEventIdAndStatus(eventId, Status.PENDING)) {
+                requestRepository.findByEventIdAndStatus(eventId, Status.PENDING).stream()
+                        .forEach(r -> r.setStatus(Status.REJECTED));
+            }
+        }
         log.info("Заявка пользователя с id={} на участие в событии с id={} подтверждена пользователем с id={}",
                 dto.getRequester(), eventId, userId);
         return dto;
@@ -253,9 +259,9 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     /**
      * Отклонение заявки на участие в событии
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param reqId Long
+     * @param reqId   Long
      * @return ParticipationRequestDto
      */
     @Override
@@ -280,7 +286,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      */
     private void userValidation(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Пользователь с id = '%s' не найден", id));
+            throw new NotFoundException(String.format("Пользователь с id = '%s' не найден", id));
         }
     }
 
@@ -291,31 +297,31 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
+            throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
 
     /**
      * Проверка, является ли пользователь создателем события
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      */
     private void initiatorValidationWithEventId(Long userId, Long eventId) {
         if (userId != eventRepository.findById(eventId).get().getInitiator().getId()) {
-            throw new MyValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
+            throw new ValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
         }
     }
 
     /**
      * Проверка, является ли пользователь создателем события
      *
-     * @param userId Long
+     * @param userId      Long
      * @param initiatorId Long
      */
     private void initiatorValidation(Long userId, Long initiatorId) {
         if (userId != initiatorId) {
-            throw new MyValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
+            throw new ValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
         }
     }
 
@@ -326,24 +332,24 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      */
     private void requestValidation(Long id) {
         if (!requestRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", id));
+            throw new NotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", id));
         }
     }
 
     /**
      * Проверка наличия запроса на участие в событии в базе по id, а также является ли пользователь создателем события
      *
-     * @param reqId Long
+     * @param reqId   Long
      * @param eventId Long
-     * @param userId Long
+     * @param userId  Long
      */
     private void eventAndInitiatorRequestValidation(Long reqId, Long eventId, Long userId) {
         Request request = requestRepository.findById(reqId).get();
         if (eventId != request.getEvent().getId()) {
-            throw new MyNotFoundException(String.format("На событие с id = '%s' нет заявки с id = '%s'", eventId, reqId));
+            throw new NotFoundException(String.format("На событие с id = '%s' нет заявки с id = '%s'", eventId, reqId));
         }
         if (userId != request.getEvent().getInitiator().getId()) {
-            throw new MyValidationException("Только пользователь, создавший событие, может одобрить заявку на участие");
+            throw new ValidationException("Только пользователь, создавший событие, может одобрить заявку на участие");
         }
     }
 }

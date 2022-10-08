@@ -1,6 +1,10 @@
 package ru.yandex.practicum.statistics.dto;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 
 @Getter
@@ -10,8 +14,8 @@ import lombok.*;
 @AllArgsConstructor
 public class EndpointHit {
     private long id;
-    String uri;
-    String app;
-    String ip;
-    String timestamp;
+    private String uri;
+    private String app;
+    private String ip;
+    private String timestamp;
 }

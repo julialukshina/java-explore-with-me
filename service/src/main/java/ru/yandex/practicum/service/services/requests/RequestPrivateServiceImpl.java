@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.enums.State;
 import ru.yandex.practicum.service.enums.Status;
-import ru.yandex.practicum.service.exeptions.MyNotFoundException;
-import ru.yandex.practicum.service.exeptions.MyValidationException;
+import ru.yandex.practicum.service.exeptions.NotFoundException;
+import ru.yandex.practicum.service.exeptions.ValidationException;
 import ru.yandex.practicum.service.mappers.requests.RequestMapper;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.models.Request;
@@ -68,17 +68,17 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         }
 
         if (requestRepository.findByEventIdAndRequesterId(eventId, userId) != null) {
-            throw new MyValidationException("Заявку на участие в событии нельзя добавить повторно");
+            throw new ValidationException("Заявку на участие в событии нельзя добавить повторно");
         }
         Event event = eventRepository.findById(eventId).get();
         if (userId == event.getInitiator().getId()) {
-            throw new MyValidationException("Пользователь, создавший событие, не может подать заявку на участие в нем");
+            throw new ValidationException("Пользователь, создавший событие, не может подать заявку на участие в нем");
         }
         if (!event.getState().equals(State.PUBLISHED)) {
-            throw new MyValidationException("Подать заявку можно только на опубликованное событие");
+            throw new ValidationException("Подать заявку можно только на опубликованное событие");
         }
         if (event.getParticipantLimit() != 0 && event.getParticipantLimit() == eventConfirmedRequest) {
-            throw new MyValidationException(String.format("Лимит заявок на событие с id='%s' исчерпан", eventId));
+            throw new ValidationException(String.format("Лимит заявок на событие с id='%s' исчерпан", eventId));
         }
         Request request = new Request(0, LocalDateTime.now(), event, userRepository.findById(userId).get(), Status.PENDING);
         if (!event.isRequestModeration()) {
@@ -102,7 +102,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
         Request request = requestRepository.findById(requestId).get();
 
         if (userId != request.getRequester().getId()) {
-            throw new MyValidationException("Только пользователь, создавший заявку, может ее отменить");
+            throw new ValidationException("Только пользователь, создавший заявку, может ее отменить");
         }
         request.setStatus(Status.CANCELED);
         ParticipationRequestDto dto = RequestMapper.toRequestDto(requestRepository.save(request));
@@ -117,7 +117,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
      */
     private void userValidation(Long id) {
         if (!userRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Пользователь с id = '%s' не найден", id));
+            throw new NotFoundException(String.format("Пользователь с id = '%s' не найден", id));
         }
     }
 
@@ -128,7 +128,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
      */
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Событие с id = '%s' не найдено", id));
+            throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
     }
 
@@ -139,7 +139,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
      */
     private void requestValidation(Long id) {
         if (!requestRepository.existsById(id)) {
-            throw new MyNotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", id));
+            throw new NotFoundException(String.format("Заявка на участие в событие с id = '%s' не найдена", id));
         }
     }
 }

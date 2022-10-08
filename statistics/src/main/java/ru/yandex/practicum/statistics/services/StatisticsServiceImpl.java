@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.statistics.dto.EndpointHit;
 import ru.yandex.practicum.statistics.dto.ViewStats;
-import ru.yandex.practicum.statistics.exceptions.MyValidationException;
+import ru.yandex.practicum.statistics.exceptions.ValidationException;
 import ru.yandex.practicum.statistics.mappers.EndpointHitMapper;
 import ru.yandex.practicum.statistics.repositories.HitRepository;
 
@@ -30,6 +30,7 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     /**
      * Добавление записи статистики
+     *
      * @param endpointHit EndpointHit
      */
     @Override
@@ -39,9 +40,10 @@ public class StatisticsServiceImpl implements StatisticsService {
 
     /**
      * Выдача статистики
-     * @param start String
-     * @param end String
-     * @param uris List<String>
+     *
+     * @param start  String
+     * @param end    String
+     * @param uris   List<String>
      * @param unique boolean
      * @return List<ViewStats>
      */
@@ -53,13 +55,13 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<ViewStats> views = new ArrayList<>();
         ViewStats viewStats = new ViewStats(null, null, 0);
         if (uris.isEmpty()) {
-            throw new MyValidationException("Uris для подсчета статистики не переданы");
+            throw new ValidationException("Uris для подсчета статистики не переданы");
         }
         try {
             startStat = LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8.toString()), formatter);
             endStat = LocalDateTime.parse(URLDecoder.decode(end, StandardCharsets.UTF_8.toString()), formatter);
-        } catch (UnsupportedEncodingException ex) {
-            throw new RuntimeException(ex.getCause());
+        } catch (UnsupportedEncodingException e) {
+            throw new ValidationException("Время не может быть раскодировано");
         }
         if (unique) {
             for (String uri :

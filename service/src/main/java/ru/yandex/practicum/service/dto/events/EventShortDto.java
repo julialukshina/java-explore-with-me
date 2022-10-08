@@ -1,6 +1,10 @@
 package ru.yandex.practicum.service.dto.events;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.dto.users.UserShortDto;
 

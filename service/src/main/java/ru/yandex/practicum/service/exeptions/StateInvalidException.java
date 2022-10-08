@@ -6,6 +6,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ResponseStatus(HttpStatus.BAD_REQUEST)
 public class StateInvalidException extends RuntimeException {
     public StateInvalidException(String message) {
-        super("This state is not correct");
+        super("Переданное значение для поля state некорректно");
     }
 }
