@@ -319,7 +319,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
      * @param userId      Long
      * @param initiatorId Long
      */
-    private void initiatorValidation(Long userId, Long initiatorId) {
+    private void initiatorValidation(long userId, long initiatorId) {
         if (userId != initiatorId) {
             throw new ValidationException("Только пользователь, создавший событие, может совершить с ним данное действие");
         }
