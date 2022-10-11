@@ -9,7 +9,7 @@ import ru.yandex.practicum.service.models.User;
 import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Long> {
-    @Query("select u from User u where u.id in :ids")
+    @Query("SELECT u FROM User u WHERE u.id IN :ids")
     Page<User> findAllByIds(List<Long> ids, Pageable pageable);
 
     Page<User> findAll(Pageable pageable);

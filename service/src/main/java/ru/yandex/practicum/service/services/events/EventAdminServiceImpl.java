@@ -75,7 +75,6 @@ public class EventAdminServiceImpl implements EventAdminService {
                 start = LocalDateTime.parse(rangeStart, formatter);
             } catch (TimeValidationException e) {
                 throw new TimeValidationException("Передано некорректное значение для параметра поиска start");
-                //               e.getStackTrace();
             }
         }
         if (rangeEnd != null) {
