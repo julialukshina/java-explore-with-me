@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  ewm-service:
+    build: service
+    container_name: service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ewm-db
+      - stats-server
+    environment:
+      - DB_HOST=db-service
+      - DB_PORT=5432
+      - SERVER_URL=http://stats-server:9090
+
+  stats-server:
+    build: statistics
+    container_name: statistics
+    ports:
+      - "9090:9090"
+    depends_on:
+      - stats-db
+    environment:
+      - DB_HOST=db-statistics
+      - DB_PORT=5432
+
+  ewm-db:
+    image: postgres:13.7-alpine
+    container_name: db-service
+    ports:
+      - "6541:5432"
+    environment:
+      - POSTGRES_DB=service
+      - POSTGRES_USER=lukshina
+      - POSTGRES_PASSWORD=12345
+
+  stats-db:
+    image: postgres:13.7-alpine
+    container_name: db-statistics
+    ports:
+    - "5541:5432"
+    environment:
+    - POSTGRES_DB=statistics
+    - POSTGRES_USER=stat
+    - POSTGRES_PASSWORD=6789
