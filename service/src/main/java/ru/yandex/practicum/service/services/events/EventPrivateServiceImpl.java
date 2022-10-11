@@ -171,6 +171,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                 dto.getDescription(),
                 LocalDateTime.parse(dto.getEventDate(), formatter),
                 userRepository.findById(userId).get(),
+                dto.getLocation().getLat(),
+                dto.getLocation().getLon(),
                 dto.isPaid(),
                 dto.getParticipantLimit(),
                 null,

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
+import ru.yandex.practicum.service.dto.locations.Location;
 import ru.yandex.practicum.service.dto.users.UserShortDto;
 
 import javax.validation.constraints.NotBlank;
@@ -33,6 +34,9 @@ public class EventFullDto {
     @NotNull
     @NotBlank
     private UserShortDto initiator;
+    @NotNull
+    @NotBlank
+    private Location location;
     @NotNull
     @NotBlank
     private boolean paid;

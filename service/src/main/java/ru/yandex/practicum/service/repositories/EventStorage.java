@@ -45,6 +45,8 @@ public class EventStorage {
         String description = rs.getString("description");
         LocalDateTime eventDate = rs.getTimestamp("event_date").toLocalDateTime();
         Long userId = rs.getLong("initiator_id");
+        Float lat = rs.getFloat("lat");
+        Float lon = rs.getFloat("lon");
         Boolean paid = rs.getBoolean("paid");
         Long participantLimit = rs.getLong("participant_limit");
         LocalDateTime publishedOn = null;
@@ -61,6 +63,8 @@ public class EventStorage {
                 description,
                 eventDate,
                 userAdminService.getUserById(userId),
+                lat,
+                lon,
                 paid,
                 participantLimit,
                 publishedOn,

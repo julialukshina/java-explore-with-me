@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
+import ru.yandex.practicum.service.dto.locations.Location;
 import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
 import ru.yandex.practicum.service.mappers.users.UserShortDtoMapper;
@@ -38,6 +39,7 @@ public class EventShortMapper {
                 eventConfirmedRequest,
                 event.getEventDate().format(formatter),
                 userShortDtoMapper.toUserShortDto(event.getInitiator()),
+                new Location(event.getLat(), event.getLon()),
                 event.isPaid(),
                 event.getTitle(),
                 0);
