@@ -84,7 +84,7 @@ CREATE TABLE IF NOT EXISTS questions
     event_id bigint   NOT NULL,
     author_id bigint   NOT NULL,
     created   timestamp WITHOUT TIME ZONE NOT NULL,
-    CONSTRAINT pk_comments PRIMARY KEY (id),
+    CONSTRAINT pk_questions PRIMARY KEY (id),
     FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE
 );
