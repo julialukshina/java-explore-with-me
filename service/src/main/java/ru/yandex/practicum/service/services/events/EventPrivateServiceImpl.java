@@ -176,7 +176,8 @@ public class EventPrivateServiceImpl implements EventPrivateService {
                 null,
                 dto.isRequestModeration(),
                 dto.getTitle(),
-                State.PENDING);
+                State.PENDING,
+                dto.isCommentModeration());
         EventFullDto eventFullDto = eventFullMapper.toEventFullDto(eventRepository.save(event));
         log.info("Событие с id={} создано пользователем с id={}", eventFullDto.getId(), userId);
         return eventFullDto;

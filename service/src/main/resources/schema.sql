@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS events
     request_moderation boolean   NOT NULL,
     state             varchar(50)   NOT NULL,
     title             varchar(255)   NOT NULL,
+    comment_moderation boolean   NOT NULL,
     CONSTRAINT pk_events PRIMARY KEY (id),
     FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
     FOREIGN KEY (initiator_id) REFERENCES users (id) ON DELETE CASCADE
@@ -68,6 +69,7 @@ CREATE TABLE IF NOT EXISTS comments
     text      varchar(1000)   NOT NULL,
     author_id bigint   NOT NULL,
     created   timestamp WITHOUT TIME ZONE NOT NULL,
+    comment_status             varchar(50)   NOT NULL,
     CONSTRAINT pk_comments PRIMARY KEY (id),
     FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE
 );

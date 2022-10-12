@@ -54,6 +54,7 @@ public class EventStorage {
         Boolean requestModeration = rs.getBoolean("request_moderation");
         State state = converter.convert(rs.getString("state"));
         String title = rs.getString("title");
+        Boolean commentModeration = rs.getBoolean("comment_moderation");
         return new Event(id,
                 annotation,
                 CategoryMapper.toCategory(categoryPublicService.getCategoryById(categoryId)),
@@ -66,6 +67,7 @@ public class EventStorage {
                 publishedOn,
                 requestModeration,
                 title,
-                state);
+                state,
+                commentModeration);
     }
 }
