@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.comments.CommentDto;
 import ru.yandex.practicum.service.dto.comments.NewCommentDto;
 import ru.yandex.practicum.service.enums.CommentStatus;
@@ -18,7 +19,6 @@ import ru.yandex.practicum.service.repositories.CommentRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.RequestRepository;
 import ru.yandex.practicum.service.repositories.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class CommentPrivateServiceImpl implements CommentPrivateService{
+public class CommentPrivateServiceImpl implements CommentPrivateService {
 
     private final EventRepository eventRepository;
     private final CommentRepository commentRepository;
@@ -53,9 +53,9 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
     @Override
     @Transactional
     public List<CommentDto> getComments(Long userId, Long eventId, int from) {
-       Pageable pageable = PageRequest.of(from, SIZE);
         userValidation(userId);
         eventValidation(eventId);
+        Pageable pageable = PageRequest.of(from, SIZE);
         List<CommentDto> dtos = commentRepository.findByEventId(eventId, pageable).stream()
                 .map(CommentMapper::toCommentDto)
                 .collect(Collectors.toList());
@@ -66,9 +66,9 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
     /**
      * Создание комментария
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param dto NewCommentDto
+     * @param dto     NewCommentDto
      * @return List<CommentDto>
      */
     @Override
@@ -77,29 +77,29 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
         userValidation(userId);
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
-        if(event.getParticipantLimit() !=0){
-            if(!requestRepository.existsByEventIdAndRequesterId(eventId, userId)||
-                    !requestRepository.findByEventIdAndRequesterId(eventId,userId).getStatus().equals(Status.CONFIRMED)){
+        if (event.getParticipantLimit() != 0) {
+            if (!requestRepository.existsByEventIdAndRequesterId(eventId, userId) ||
+                    !requestRepository.findByEventIdAndRequesterId(eventId, userId).getStatus().equals(Status.CONFIRMED)) {
                 throw new ValidationException("Только пользователь с подтвержденной заявкой может оставить комментарий к событию");
             }
         }
- Comment comment = commentRepository.save(new Comment(0,
-        dto.getText(),
-        event,
-        userRepository.findById(userId).get(),
-        LocalDateTime.now(),
-        CommentStatus.NO_CHANGES));
- log.info("Комментарий с id={} создано", comment.getId());
+        Comment comment = commentRepository.save(new Comment(0,
+                dto.getText(),
+                event,
+                userRepository.findById(userId).get(),
+                LocalDateTime.now(),
+                CommentStatus.NO_CHANGES));
+        log.info("Комментарий с id={} создано", comment.getId());
         return CommentMapper.toCommentDto(comment);
     }
 
     /**
      * Обновление комментария
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param commId Long
-     * @param text String
+     * @param commId  Long
+     * @param text    String
      * @return CommentDto
      */
     @Override
@@ -107,8 +107,7 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
     public CommentDto updateComment(Long userId, Long eventId, Long commId, String text) {
         userValidation(userId);
         eventValidation(eventId);
-        commentValidation(commId);
-        eventCommentValidation(eventId, commId);
+        сommentValidation(eventId, commId);
         authorValidation(userId, commId);
         Comment comment = commentRepository.findById(commId).get();
         comment.setText(text);
@@ -121,17 +120,16 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
     /**
      * Удаление комментария его автором
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param commId Long
+     * @param commId  Long
      */
     @Override
     @Transactional
     public void deleteComment(Long userId, Long eventId, Long commId) {
         userValidation(userId);
         eventValidation(eventId);
-        commentValidation(commId);
-        eventCommentValidation(eventId, commId);
+        сommentValidation(eventId, commId);
         authorValidation(userId, commId);
         commentRepository.deleteById(commId);
         log.info("Комментарий с id={} удален автором комментария", commId);
@@ -158,30 +156,23 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
         if (!eventRepository.existsById(id)) {
             throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
-        if(eventRepository.findById(id).get().getEventDate().isAfter(now)){
+        if (eventRepository.findById(id).get().getEventDate().isAfter(now)) {
             throw new ValidationException("Комментарий может быть добавлен только к событию, которое уже состоялось");
         }
     }
 
     /**
-     * Проверка наличия комментария в базе по id
-     * @param id Long
-     */
-    private void commentValidation(Long id){
-        if(!commentRepository.existsById(id)){
-            throw new NotFoundException(String.format("Комментарий с id = '%s' не найден", id));
-        }
-    }
-
-    /**
-     * Проверка, создан ли комментарий к данному событию
+     * Проверка наличия комментария в базе по id и создан ли комментарий к данному событию
      *
      * @param eventId Long
-     * @param commId Long
+     * @param commId  Long
      */
-    private void eventCommentValidation (Long eventId, Long commId){
-        if(requestRepository.findById(commId).get().getEvent().getId()!=eventId){
-            throw new ValidationException(String.format("Комментарий с id = '%s' не относится к событию с id = '%s'", commId, eventId) );
+    private void сommentValidation(Long eventId, Long commId) {
+        if (!commentRepository.existsById(commId)) {
+            throw new NotFoundException(String.format("Комментарий с id = '%s' не найден", commId));
+        }
+        if (commentRepository.findById(commId).get().getEvent().getId() != eventId) {
+            throw new ValidationException(String.format("Комментарий с id = '%s' не относится к событию с id = '%s'", commId, eventId));
         }
     }
 
@@ -191,8 +182,8 @@ public class CommentPrivateServiceImpl implements CommentPrivateService{
      * @param userId Long
      * @param commId Long
      */
-    private void authorValidation(Long userId, Long commId){
-        if(commentRepository.findById(commId).get().getAuthor().getId()!=userId){
+    private void authorValidation(Long userId, Long commId) {
+        if (commentRepository.findById(commId).get().getAuthor().getId() != userId) {
             throw new ValidationException(String.format("Пользователь с id = '%s' не является автором комментария с id = '%s'", userId, commId));
 
         }

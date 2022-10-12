@@ -1,4 +1,4 @@
-package ru.yandex.practicum.service.dto.comments;
+package ru.yandex.practicum.service.dto.questions;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -16,14 +16,14 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommentDto {
+public class QuestionDto {
     private long id;
     @NotNull
     @NotBlank
     private String text;
+    private String answer;
     @NotNull
     @NotBlank
     private String authorName;
     private String created;
-    private String commentStatus;
 }
