@@ -18,8 +18,9 @@ public class QuestionAdminController {
     public QuestionAdminController(QuestionAdminService service) {
         this.service = service;
     }
+
     @DeleteMapping("/admin/questions/{questId}")
-    public void deleteQuestion(@PathVariable Long questId){
+    public void deleteQuestion(@PathVariable Long questId) {
         service.deleteQuestion(questId);
     }
 }

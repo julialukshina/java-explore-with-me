@@ -41,16 +41,16 @@ public class QuestionPrivateController {
 
     @PostMapping
     public QuestionDto addQuestion(@PathVariable Long userId,
-                                  @PathVariable Long eventId,
-                                  @RequestBody NewQuestionDto dto) {
+                                   @PathVariable Long eventId,
+                                   @RequestBody NewQuestionDto dto) {
         return service.addQuestion(userId, eventId, dto);
     }
 
     @PatchMapping("/{questId}")
     public QuestionDto updateQuestion(@PathVariable Long userId,
-                                     @PathVariable Long eventId,
-                                     @PathVariable Long questId,
-                                     @RequestBody @NotBlank String answer) {
+                                      @PathVariable Long eventId,
+                                      @PathVariable Long questId,
+                                      @RequestBody @NotBlank String answer) {
         return service.updateQuestion(userId, eventId, questId, answer);
     }
 

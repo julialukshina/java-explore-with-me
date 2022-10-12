@@ -12,7 +12,7 @@ public class CommentStatusConverter implements Converter<String, CommentStatus> 
         try {
             return source.isEmpty() ? null : CommentStatus.valueOf(source.trim().toUpperCase(Locale.ROOT));
         } catch (Exception e) {
-            return CommentStatus.UNSUPPORTED_SORT;
+            return CommentStatus.UNSUPPORTED_STATUS;
         }
     }
 }

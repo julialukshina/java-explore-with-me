@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
 public class QuestionMapper {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static QuestionDto toQuestionDto(Question question){
+    public static QuestionDto toQuestionDto(Question question) {
         return new QuestionDto(question.getId(),
                 question.getText(),
                 question.getAnswer(),

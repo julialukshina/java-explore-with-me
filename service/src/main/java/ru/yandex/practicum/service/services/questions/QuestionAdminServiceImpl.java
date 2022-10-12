@@ -8,7 +8,7 @@ import ru.yandex.practicum.service.repositories.QuestionRepository;
 
 @Service
 @Slf4j
-public class QuestionAdminServiceImpl implements QuestionAdminService{
+public class QuestionAdminServiceImpl implements QuestionAdminService {
     private final QuestionRepository repository;
 
     @Autowired
@@ -28,8 +28,8 @@ public class QuestionAdminServiceImpl implements QuestionAdminService{
      *
      * @param id Long
      */
-    private void questionValidation(Long id){
-        if(!repository.existsById(id)){
+    private void questionValidation(Long id) {
+        if (!repository.existsById(id)) {
             throw new NotFoundException(String.format("Вопрос с id = '%s' не найден", id));
         }
     }

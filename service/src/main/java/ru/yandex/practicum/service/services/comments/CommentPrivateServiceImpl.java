@@ -89,7 +89,7 @@ public class CommentPrivateServiceImpl implements CommentPrivateService {
                 userRepository.findById(userId).get(),
                 LocalDateTime.now(),
                 CommentStatus.NO_CHANGES));
-        log.info("Комментарий с id={} создано", comment.getId());
+        log.info("Комментарий с id={} создан", comment.getId());
         return CommentMapper.toCommentDto(comment);
     }
 

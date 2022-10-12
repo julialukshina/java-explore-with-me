@@ -18,6 +18,7 @@ public class CommentAdminServiceImpl implements CommentAdminService {
 
     /**
      * Удаление комментария администратором
+     *
      * @param commId Long
      */
     @Override
@@ -29,10 +30,11 @@ public class CommentAdminServiceImpl implements CommentAdminService {
 
     /**
      * Проверка наличия комментария в базе по id
+     *
      * @param id Long
      */
-    private void commentValidation(Long id){
-        if(!repository.existsById(id)){
+    private void commentValidation(Long id) {
+        if (!repository.existsById(id)) {
             throw new NotFoundException(String.format("Комментарий с id = '%s' не найден", id));
         }
     }

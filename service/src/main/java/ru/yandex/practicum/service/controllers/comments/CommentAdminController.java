@@ -18,7 +18,7 @@ public class CommentAdminController {
     }
 
     @DeleteMapping("/admin/comments/{commId}")
-    public void deleteComment(@PathVariable Long commId){
+    public void deleteComment(@PathVariable Long commId) {
         service.deleteComment(commId);
     }
 }

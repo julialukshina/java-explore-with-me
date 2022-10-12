@@ -7,7 +7,8 @@ import java.time.format.DateTimeFormatter;
 
 public class CommentMapper {
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    public static CommentDto toCommentDto(Comment comment){
+
+    public static CommentDto toCommentDto(Comment comment) {
         return new CommentDto(comment.getId(),
                 comment.getText(),
                 comment.getAuthor().getName(),

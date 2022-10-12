@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class QuestionPrivateServiceImpl implements QuestionPrivateService{
+public class QuestionPrivateServiceImpl implements QuestionPrivateService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final QuestionRepository questionRepository;
@@ -38,9 +38,9 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Выдача списка вопросов по событию
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param from int
+     * @param from    int
      * @return List<QuestionDto>
      */
 
@@ -60,9 +60,9 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Добавление вопроса
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
-     * @param dto NewQuestionDto
+     * @param dto     NewQuestionDto
      * @return QuestionDto
      */
     @Override
@@ -83,10 +83,10 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Добавление автором события ответа на вопрос
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      * @param questId Long
-     * @param answer String
+     * @param answer  String
      * @return QuestionDto
      */
     @Override
@@ -98,7 +98,7 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
         creatorValidation(userId, eventId);
         Question question = questionRepository.findById(questId).get();
         question.setAnswer(answer);
-        QuestionDto dto=QuestionMapper.toQuestionDto(questionRepository.save(question));
+        QuestionDto dto = QuestionMapper.toQuestionDto(questionRepository.save(question));
         log.info("К вопросу с id={} добавлен ответ", questId);
         return dto;
     }
@@ -106,7 +106,7 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Удаление вопроса его автором
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      * @param questId Long
      */
@@ -154,22 +154,23 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
         if (!eventRepository.existsById(id)) {
             throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
         }
-        if(eventRepository.findById(id).get().getEventDate().isBefore(now)){
+        if (eventRepository.findById(id).get().getEventDate().isBefore(now)) {
             throw new ValidationException("Вопрос может быть задан только к событию, которое еще не состоялось");
         }
     }
 
     /**
      * Проверка наличия вопроса в базе по id и что он относится к данному событию
+     *
      * @param eventId Long
      * @param questId Long
      */
-    private void questionValidation(Long eventId, Long questId){
-        if(!questionRepository.existsById(questId)){
+    private void questionValidation(Long eventId, Long questId) {
+        if (!questionRepository.existsById(questId)) {
             throw new NotFoundException(String.format("Вопрос с id = '%s' не найден", questId));
         }
-        if(questionRepository.findById(questId).get().getEvent().getId()!=eventId){
-            throw new ValidationException(String.format("Вопрос с id = '%s' не относится к событию с id = '%s'", questId, eventId) );
+        if (questionRepository.findById(questId).get().getEvent().getId() != eventId) {
+            throw new ValidationException(String.format("Вопрос с id = '%s' не относится к событию с id = '%s'", questId, eventId));
         }
     }
 
@@ -177,11 +178,11 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Проверка, является ли пользователь автором события
      *
-     * @param userId Long
+     * @param userId  Long
      * @param eventId Long
      */
-    private void creatorValidation(Long userId, Long eventId){
-        if(eventRepository.findById(eventId).get().getInitiator().getId()!=userId){
+    private void creatorValidation(Long userId, Long eventId) {
+        if (eventRepository.findById(eventId).get().getInitiator().getId() != userId) {
             throw new ValidationException(String.format("Пользователь с id = '%s' не является автором события с id = '%s'", userId, eventId));
 
         }
@@ -190,7 +191,7 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService{
     /**
      * Проверка, является ли пользователь автором вопроса
      *
-     * @param userId Long
+     * @param userId  Long
      * @param questId Long
      */
     private void authorValidation(Long userId, Long questId) {
