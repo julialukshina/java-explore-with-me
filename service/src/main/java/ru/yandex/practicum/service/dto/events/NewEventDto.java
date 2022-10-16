@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import ru.yandex.practicum.service.dto.locations.Location;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -27,6 +28,9 @@ public class NewEventDto {
     @NotNull
     @NotBlank
     private String eventDate;
+    @NotNull
+    @NotBlank
+    private Location location;
     private boolean paid;
     private long participantLimit;
     private boolean requestModeration;

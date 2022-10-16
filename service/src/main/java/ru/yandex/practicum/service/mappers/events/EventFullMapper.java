@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
+import ru.yandex.practicum.service.dto.locations.Location;
 import ru.yandex.practicum.service.enums.StateEnumConverter;
 import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
@@ -43,6 +44,7 @@ public class EventFullMapper {
                 event.getDescription(),
                 event.getEventDate().format(formatter),
                 userShortDtoMapper.toUserShortDto(event.getInitiator()),
+                new Location(event.getLat(), event.getLon()),
                 event.isPaid(),
                 event.getParticipantLimit(),
                 event.getPublishedOn() != null ? event.getPublishedOn().format(formatter) : null,
@@ -61,6 +63,8 @@ public class EventFullMapper {
                 dto.getDescription(),
                 LocalDateTime.parse(dto.getEventDate(), formatter),
                 userShortDtoMapper.toUser(dto.getInitiator()),
+                dto.getLocation().getLat(),
+                dto.getLocation().getLon(),
                 dto.isPaid(),
                 dto.getParticipantLimit(),
                 dto.getPublishedOn() != null ? LocalDateTime.parse(dto.getPublishedOn(), formatter) : null,
