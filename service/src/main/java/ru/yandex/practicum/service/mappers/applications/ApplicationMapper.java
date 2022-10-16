@@ -11,7 +11,7 @@ public class ApplicationMapper {
     public static ApplicationDto toApplicationDto(Application application) {
         return new ApplicationDto(application.getId(),
                 application.getText(),
-                application.getAuthor().getName(),
+                application.getAuthor().getId(),
                 application.getCreated().format(formatter),
                 application.getAppStatus().toString(),
                 application.getAppReason().toString());

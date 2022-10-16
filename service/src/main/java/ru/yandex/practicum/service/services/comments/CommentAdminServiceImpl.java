@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.services.comments;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.repositories.CommentRepository;
 
@@ -22,6 +23,7 @@ public class CommentAdminServiceImpl implements CommentAdminService {
      * @param commId Long
      */
     @Override
+    @Transactional
     public void deleteComment(Long commId) {
         commentValidation(commId);
         repository.deleteById(commId);

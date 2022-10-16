@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.applications.ApplicationDto;
 import ru.yandex.practicum.service.enums.AppReason;
 import ru.yandex.practicum.service.enums.AppStatus;
@@ -69,6 +70,7 @@ public class ApplicationAdminServiceImpl implements ApplicationAdminService {
      * @param appId Long
      */
     @Override
+    @Transactional
     public void rejectApplication(Long appId) {
         appValidation(appId);
         Application application = applicationRepository.findById(appId).get();
@@ -84,6 +86,7 @@ public class ApplicationAdminServiceImpl implements ApplicationAdminService {
      * @param appId Long
      */
     @Override
+    @Transactional
     public void approveApplication(Long appId) {
         appValidation(appId);
         Application application = applicationRepository.findById(appId).get();

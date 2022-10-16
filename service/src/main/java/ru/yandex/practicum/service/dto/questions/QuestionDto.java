@@ -7,8 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -18,12 +16,9 @@ import javax.validation.constraints.NotNull;
 @NoArgsConstructor
 public class QuestionDto {
     private long id;
-    @NotNull
-    @NotBlank
     private String text;
     private String answer;
-    @NotNull
-    @NotBlank
     private String authorName;
+    private long eventId;
     private String created;
 }

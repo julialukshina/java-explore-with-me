@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @EqualsAndHashCode
-@Validated
 @AllArgsConstructor
 @NoArgsConstructor
 public class Comment {

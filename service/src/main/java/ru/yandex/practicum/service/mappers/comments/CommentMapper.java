@@ -12,6 +12,7 @@ public class CommentMapper {
         return new CommentDto(comment.getId(),
                 comment.getText(),
                 comment.getAuthor().getName(),
+                comment.getEvent().getId(),
                 comment.getCreated().format(formatter),
                 comment.getCommentStatus().toString());
     }

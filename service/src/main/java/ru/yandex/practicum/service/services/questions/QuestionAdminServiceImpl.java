@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.services.questions;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.repositories.QuestionRepository;
 
@@ -17,6 +18,7 @@ public class QuestionAdminServiceImpl implements QuestionAdminService {
     }
 
     @Override
+    @Transactional
     public void deleteQuestion(Long questId) {
         questionValidation(questId);
         repository.deleteById(questId);

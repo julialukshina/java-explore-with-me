@@ -13,6 +13,7 @@ public class QuestionMapper {
                 question.getText(),
                 question.getAnswer(),
                 question.getAuthor().getName(),
+                question.getEvent().getId(),
                 question.getCreated().format(formatter));
     }
 }
