@@ -51,7 +51,8 @@ public class EventFullMapper {
                 event.isRequestModeration(),
                 event.getTitle(),
                 0,
-                event.getState().toString());
+                event.getState().toString(),
+                event.isCommentModeration());
     }
 
     public Event toEvent(EventFullDto dto) {
@@ -69,6 +70,7 @@ public class EventFullMapper {
                 dto.getPublishedOn() != null ? LocalDateTime.parse(dto.getPublishedOn(), formatter) : null,
                 dto.isRequestModeration(),
                 dto.getTitle(),
-                converter.convert(dto.getState()));
+                converter.convert(dto.getState()),
+                dto.isCommentModeration());
     }
 }

@@ -37,4 +37,5 @@ public class NewEventDto {
     @NotNull
     @NotBlank
     private String title;
+    private boolean commentModeration;
 }

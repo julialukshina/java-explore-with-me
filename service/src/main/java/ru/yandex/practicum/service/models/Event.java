@@ -64,4 +64,6 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @Column(name = "state")
     private State state;
+    @Column(name = "comment_moderation")
+    private boolean commentModeration;
 }
