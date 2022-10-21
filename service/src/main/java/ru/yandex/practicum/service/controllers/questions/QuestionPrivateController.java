@@ -12,10 +12,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.yandex.practicum.service.dto.questions.NewAnswerDto;
 import ru.yandex.practicum.service.dto.questions.NewQuestionDto;
 import ru.yandex.practicum.service.dto.questions.QuestionDto;
 import ru.yandex.practicum.service.services.questions.QuestionPrivateService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -42,7 +44,7 @@ public class QuestionPrivateController {
     @PostMapping
     public QuestionDto addQuestion(@PathVariable Long userId,
                                    @PathVariable Long eventId,
-                                   @RequestBody NewQuestionDto dto) {
+                                   @RequestBody @Valid NewQuestionDto dto) {
         return service.addQuestion(userId, eventId, dto);
     }
 
@@ -50,8 +52,8 @@ public class QuestionPrivateController {
     public QuestionDto updateQuestion(@PathVariable Long userId,
                                       @PathVariable Long eventId,
                                       @PathVariable Long questId,
-                                      @RequestBody @NotBlank String answer) {
-        return service.updateQuestion(userId, eventId, questId, answer);
+                                      @RequestBody @Valid NewAnswerDto dto) {
+        return service.updateQuestion(userId, eventId, questId, dto);
     }
 
     @DeleteMapping("/{questId}")

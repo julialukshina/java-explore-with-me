@@ -18,6 +18,7 @@ import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.dto.requests.ParticipationRequestDto;
 import ru.yandex.practicum.service.services.events.EventPrivateService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -42,12 +43,12 @@ public class EventPrivateController {
     }
 
     @PatchMapping
-    public EventFullDto updateEvent(@PathVariable Long userId, @RequestBody UpdateEventRequest updateEventRequest) {
+    public EventFullDto updateEvent(@PathVariable Long userId, @RequestBody @Valid UpdateEventRequest updateEventRequest) {
         return service.updateEvent(userId, updateEventRequest);
     }
 
     @PostMapping
-    public EventFullDto postEvent(@PathVariable Long userId, @RequestBody NewEventDto dto) {
+    public EventFullDto postEvent(@PathVariable Long userId, @RequestBody @Valid NewEventDto dto) {
         return service.postEvent(userId, dto);
     }
 

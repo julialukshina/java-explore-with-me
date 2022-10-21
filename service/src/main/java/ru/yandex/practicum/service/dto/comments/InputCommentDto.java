@@ -16,7 +16,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewCommentDto {
+public class InputCommentDto {
         @NotNull
         @NotBlank
         private String text;

@@ -96,6 +96,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
             event.setAnnotation(updateEventRequest.getAnnotation());
         }
         if (updateEventRequest.getCategory() != 0) {
+            categoryValidation(updateEventRequest.getCategory());
             event.setCategory(categoryRepository.findById(updateEventRequest.getCategory()).get());
         }
         if (updateEventRequest.getDescription() != null) {
@@ -301,6 +302,17 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     private void eventValidation(Long id) {
         if (!eventRepository.existsById(id)) {
             throw new NotFoundException(String.format("Событие с id = '%s' не найдено", id));
+        }
+    }
+
+    /**
+     * Проверка наличия категории в базе по id
+     *
+     * @param id Long
+     */
+    private void categoryValidation(Long id) {
+        if (!categoryRepository.existsById(id)) {
+            throw new NotFoundException(String.format("Категория с id = '%s' не найдена", id));
         }
     }
 

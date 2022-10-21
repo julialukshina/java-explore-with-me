@@ -14,6 +14,7 @@ import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.services.events.EventAdminService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -44,7 +45,7 @@ public class EventAdminController {
 
 
     @PutMapping("/admin/events/{eventId}")
-    public EventFullDto updateEvent(@PathVariable Long eventId, @RequestBody UpdateEventRequest updateEventRequest) {
+    public EventFullDto updateEvent(@PathVariable Long eventId, @RequestBody @Valid UpdateEventRequest updateEventRequest) {
         return service.updateEvent(eventId, updateEventRequest);
     }
 

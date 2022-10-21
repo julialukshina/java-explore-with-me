@@ -16,10 +16,6 @@ import javax.validation.constraints.Positive;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class UserShortDto {
-    @NotNull
-    @Positive
     private long id;
-    @NotNull
-    @NotBlank
     private String name;
 }

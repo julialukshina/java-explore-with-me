@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.dto.categories.NewCategoryDto;
+import ru.yandex.practicum.service.exeptions.ConflictException;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.mappers.categories.CategoryMapper;
 import ru.yandex.practicum.service.models.Category;
@@ -64,7 +65,7 @@ public class CategoryAdminServiceImpl implements CategoryAdminService {
     public void deleteCategory(Long catId) {
         categoryValidation(catId);
         if (!eventRepository.findByCategoryId(catId).isEmpty()) {
-            throw new NotFoundException(String.format("В базе данных существуют события связанные " +
+            throw new ConflictException(String.format("В базе данных существуют события связанные " +
                     "с категорией с id = '%s'", catId));
         }
         categoryRepository.deleteById(catId);

@@ -19,27 +19,13 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class EventShortDto {
     private long id;
-    @NotNull
-    @NotBlank
     private String annotation;
-    @NotNull
-    @NotBlank
     private CategoryDto category;
     private long confirmedRequests;
-    @NotNull
-    @NotBlank
     private String eventDate;
-    @NotNull
-    @NotBlank
     private UserShortDto initiator;
-    @NotNull
-    @NotBlank
     private Location location;
-    @NotNull
-    @NotBlank
     private boolean paid;
-    @NotNull
-    @NotBlank
     private String title;
     private long views;
 }

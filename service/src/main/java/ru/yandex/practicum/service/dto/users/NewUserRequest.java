@@ -1,10 +1,6 @@
 package ru.yandex.practicum.service.dto.users;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -15,6 +11,7 @@ import javax.validation.constraints.NotNull;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
+@NoArgsConstructor
 public class NewUserRequest {
     @Email
     @NotNull

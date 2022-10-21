@@ -13,6 +13,8 @@ import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
 import ru.yandex.practicum.service.services.compilations.CompilationAdminService;
 
+import javax.validation.Valid;
+
 @RestController
 @Slf4j
 @Validated
@@ -26,7 +28,7 @@ public class CompilationAdminController {
 
 
     @PostMapping("/admin/compilations")
-    public CompilationDto createCompilation(@RequestBody NewCompilationDto dto) {
+    public CompilationDto createCompilation(@RequestBody @Valid NewCompilationDto dto) {
         return service.createCompilation(dto);
     }
 

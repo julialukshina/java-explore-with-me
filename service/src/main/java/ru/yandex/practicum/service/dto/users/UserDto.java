@@ -16,14 +16,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class UserDto {
-    @NotNull
-    @NotBlank
     private long id;
-    @Email
-    @NotNull
-    @NotBlank
     private String email;
-    @NotNull
-    @NotBlank
     private String name;
 }

@@ -13,6 +13,9 @@ import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.dto.categories.NewCategoryDto;
 import ru.yandex.practicum.service.services.categories.CategoryAdminService;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+
 @RestController
 @Slf4j
 @Validated
@@ -25,18 +28,18 @@ public class CategoryAdminController {
     }
 
     @PatchMapping("/admin/categories")
-    public CategoryDto updateCategory(@RequestBody CategoryDto dto) {
+    public CategoryDto updateCategory(@RequestBody @Valid CategoryDto dto) {
         return service.updateCategory(dto);
     }
 
     @PostMapping("/admin/categories")
-    public CategoryDto postCategory(@RequestBody NewCategoryDto dto) {
+    public CategoryDto postCategory(@RequestBody @Valid NewCategoryDto dto) {
         System.out.println(dto);
         return service.postCategory(dto);
     }
 
     @DeleteMapping("/admin/categories/{catId}")
-    public void deleteCategory(@PathVariable Long catId) {
+    public void deleteCategory(@PathVariable @Positive long catId) {
         service.deleteCategory(catId);
     }
 }

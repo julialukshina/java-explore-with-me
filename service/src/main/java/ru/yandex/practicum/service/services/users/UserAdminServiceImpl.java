@@ -12,6 +12,7 @@ import ru.yandex.practicum.service.mappers.users.UserMapper;
 import ru.yandex.practicum.service.models.User;
 import ru.yandex.practicum.service.repositories.UserRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,14 @@ public class UserAdminServiceImpl implements UserAdminService {
     public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         org.springframework.data.domain.Pageable pageable = Pageable.of(from, size);
         List<UserDto> dtos;
-        if (!ids.isEmpty()) {
+
+        if(ids==null || ids.isEmpty()){
+          dtos = userRepository.findAll(pageable).stream()
+                    .map(UserMapper::toUserDto)
+                    .collect(Collectors.toList());
+            log.info("Администратору выдан список пользователей");
+            return dtos;
+        }else {
             for (Long id :
                     ids) {
                 userValidation(id);
@@ -51,11 +59,6 @@ public class UserAdminServiceImpl implements UserAdminService {
             log.info("Администратору выдан список пользователей");
             return dtos;
         }
-        dtos = userRepository.findAll(pageable).stream()
-                .map(UserMapper::toUserDto)
-                .collect(Collectors.toList());
-        log.info("Администратору выдан список пользователей");
-        return dtos;
     }
 
     /**

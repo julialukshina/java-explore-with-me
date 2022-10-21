@@ -8,12 +8,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.service.dto.compilations.CompilationDto;
 import ru.yandex.practicum.service.dto.compilations.NewCompilationDto;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
+import ru.yandex.practicum.service.exeptions.ValidationException;
 import ru.yandex.practicum.service.mappers.compilations.CompilationMapper;
 import ru.yandex.practicum.service.models.Compilation;
 import ru.yandex.practicum.service.models.Event;
 import ru.yandex.practicum.service.repositories.CompilationRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -44,10 +47,16 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     @Override
     @Transactional
     public CompilationDto createCompilation(NewCompilationDto dto) {
-        for (Long id :
-                dto.getEvents()) {
-            eventValidation(id);
+        if(dto.getEvents()==null){
+            List<Long> events = new ArrayList<>();
+            dto.setEvents(events);
+        }else{
+            for (Long id :
+                    dto.getEvents()) {
+                eventValidation(id);
+            }
         }
+
         CompilationDto compilationDto = compilationMapper.toCompilationDto(compilationRepository.save(compilationMapper.toCompilationFromNew(dto)));
         log.info("Категория с id={} создана", compilationDto.getId());
         return compilationDto;
@@ -79,11 +88,12 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         eventValidation(eventId);
         Compilation compilation = compilationRepository.findById(compId).get();
         Set<Event> events = compilation.getEvents();
-        if (events.contains(eventRepository.findById(eventId).get())) {
+        if(!events.contains(eventRepository.findById(eventId).get())){
+            throw new NotFoundException(String.format("Событие с id = '%s' в подборке не найдено", eventId));
+        }
             events.remove(eventRepository.findById(eventId).get());
             compilation.setEvents(events);
             compilationRepository.save(compilation);
-        }
         log.info("Событие с id={} удалено из подборки с id={}", eventId, compId);
     }
 
@@ -100,12 +110,13 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
         eventValidation(eventId);
         Compilation compilation = compilationRepository.findById(compId).get();
         Set<Event> events = compilation.getEvents();
-        if (!events.contains(eventRepository.findById(eventId).get())) {
+        if(events.contains(eventRepository.findById(eventId).get())){
+            throw new NotFoundException(String.format("Событие с id = '%s' уже есть в подборке", eventId));
+        }
             events.add(eventRepository.findById(eventId).get());
             compilation.setEvents(events);
             compilationRepository.save(compilation);
-            log.info("Событие с id={} добавлено из подборки с id={}", eventId, compId);
-        }
+            log.info("Событие с id={} добавлено в подборку с id={}", eventId, compId);
     }
 
     /**
@@ -118,10 +129,11 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     public void unpinCompilation(Long compId) {
         compilationValidation(compId);
         Compilation compilation = compilationRepository.findById(compId).get();
-        if (compilation.isPinned()) {
-            compilation.setPinned(false);
-            compilationRepository.save(compilation);
+        if (!compilation.isPinned()) {
+            throw new ValidationException(String.format("Подборка с id = '%s' уже не закреплена", compId));
         }
+        compilation.setPinned(false);
+        compilationRepository.save(compilation);
         log.info("Подборка с id={} откреплена", compId);
     }
 
@@ -135,10 +147,11 @@ public class CompilationAdminServiceImpl implements CompilationAdminService {
     public void pinCompilation(Long compId) {
         compilationValidation(compId);
         Compilation compilation = compilationRepository.findById(compId).get();
-        if (!compilation.isPinned()) {
+        if (compilation.isPinned()) {
+            throw new ValidationException(String.format("Подборка с id = '%s' уже закреплена", compId));
+        }
             compilation.setPinned(true);
             compilationRepository.save(compilation);
-        }
         log.info("Подборка с id={} закреплена", compId);
     }
 

@@ -6,6 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.service.dto.questions.NewAnswerDto;
 import ru.yandex.practicum.service.dto.questions.NewQuestionDto;
 import ru.yandex.practicum.service.dto.questions.QuestionDto;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
@@ -70,6 +71,9 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService {
     public QuestionDto addQuestion(Long userId, Long eventId, NewQuestionDto dto) {
         userValidation(userId);
         eventByEventDateValidation(eventId);
+        if(creatorValidation(userId, eventId)){
+            throw new ValidationException("Автор события не может задавать вопросы к своему событию");
+        }
         Question question = questionRepository.save(new Question(0,
                 dto.getText(),
                 null,
@@ -86,21 +90,23 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService {
      * @param userId  Long
      * @param eventId Long
      * @param questId Long
-     * @param answer  String
+     * @param dto  NewAnswerDto
      * @return QuestionDto
      */
     @Override
     @Transactional
-    public QuestionDto updateQuestion(Long userId, Long eventId, Long questId, String answer) {
+    public QuestionDto updateQuestion(Long userId, Long eventId, Long questId, NewAnswerDto dto) {
         userValidation(userId);
         eventByEventDateValidation(eventId);
         questionValidation(eventId, questId);
-        creatorValidation(userId, eventId);
+       if(!creatorValidation(userId, eventId)){
+           throw new ValidationException(String.format("Пользователь с id = '%s' не является автором события с id = '%s'", userId, eventId));
+       }
         Question question = questionRepository.findById(questId).get();
-        question.setAnswer(answer);
-        QuestionDto dto = QuestionMapper.toQuestionDto(questionRepository.save(question));
+        question.setAnswer(dto.getAnswer());
+        QuestionDto questionDto = QuestionMapper.toQuestionDto(questionRepository.save(question));
         log.info("К вопросу с id={} добавлен ответ", questId);
-        return dto;
+        return questionDto;
     }
 
     /**
@@ -181,11 +187,11 @@ public class QuestionPrivateServiceImpl implements QuestionPrivateService {
      * @param userId  Long
      * @param eventId Long
      */
-    private void creatorValidation(Long userId, Long eventId) {
+    private boolean creatorValidation(Long userId, Long eventId) {
         if (eventRepository.findById(eventId).get().getInitiator().getId() != userId) {
-            throw new ValidationException(String.format("Пользователь с id = '%s' не является автором события с id = '%s'", userId, eventId));
-
+            return false;
         }
+        return true;
     }
 
     /**

@@ -14,7 +14,9 @@ import ru.yandex.practicum.service.exeptions.StateInvalidException;
 import ru.yandex.practicum.service.exeptions.TimeValidationException;
 import ru.yandex.practicum.service.exeptions.ValidationException;
 import ru.yandex.practicum.service.mappers.events.EventFullMapper;
+import ru.yandex.practicum.service.models.Category;
 import ru.yandex.practicum.service.models.Event;
+import ru.yandex.practicum.service.models.User;
 import ru.yandex.practicum.service.repositories.CategoryRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.EventStorage;
@@ -198,6 +200,34 @@ public class EventAdminServiceImpl implements EventAdminService {
     @Override
     @Transactional
     public EventFullDto publishEvent(Long eventId) {
+
+        // TODO: 20.10.2022 убери после защиты - временная мера для проверки комментариев
+
+        Category category = new Category(1L, "category");
+        User user = new User(1L, "user", "user@user.com");
+        Event event1 = Event.builder()
+                .id(2L)
+                .annotation("Спектакль МХАТа")
+                .category(category)
+                .createdOn(LocalDateTime.now().minusDays(3L))
+                .description("Спектакль МХАТа")
+                .eventDate(LocalDateTime.now().minusDays(1L))
+                .initiator(user)
+                .lat(54.1838F)
+                .lon(45.1749F)
+                .paid(true)
+                .participantLimit(1L)
+                .publishedOn(LocalDateTime.now().minusDays(2L))
+                .requestModeration(false)
+                .title("Спектакль")
+                .state(State.PUBLISHED)
+                .commentModeration(true)
+                .build();
+        eventRepository.save(event1);
+
+
+
+
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (!event.getState().equals(State.PENDING)) {

@@ -6,9 +6,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
 
 @Getter
 @Setter
@@ -16,8 +16,7 @@ import javax.validation.constraints.Positive;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class CategoryDto {
-    @NotNull
-    @Positive
+    @Min(value=0)
     private long id;
     @NotNull
     @NotBlank

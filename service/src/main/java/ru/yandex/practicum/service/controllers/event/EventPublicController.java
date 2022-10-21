@@ -8,10 +8,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.service.clients.HitClient;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
-import ru.yandex.practicum.service.dto.statistics.EndpointHit;
 import ru.yandex.practicum.service.enums.Sort;
 import ru.yandex.practicum.service.enums.SortEnumConverter;
 import ru.yandex.practicum.service.exeptions.SortInvalidException;
@@ -20,7 +18,6 @@ import ru.yandex.practicum.service.services.events.EventPublicService;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -31,15 +28,14 @@ import java.util.List;
 public class EventPublicController {
     private final SortEnumConverter converter;
     private final EventPublicService service;
-    private final HitClient client;
-    private final String app = "service";
+
+
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    public EventPublicController(EventPublicService service, SortEnumConverter converter, HitClient client) {
+    public EventPublicController(EventPublicService service, SortEnumConverter converter) {
         this.service = service;
         this.converter = converter;
-        this.client = client;
     }
 
     @GetMapping
@@ -61,24 +57,12 @@ public class EventPublicController {
             }
         }
 
-        client.createHit(new EndpointHit(0,
-                request.getRequestURI(),
-                app,
-                request.getRemoteAddr(),
-                LocalDateTime.now().format(formatter)));
 
-
-        return service.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort1, from, size);
+        return service.getEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort1, from, size, request);
     }
 
     @GetMapping(value = "/{id}") //возвращает вещь по Id
     public EventFullDto getEventById(@PathVariable Long id, HttpServletRequest request) {
-        client.createHit(new EndpointHit(0,
-                request.getRequestURI(),
-                app,
-                request.getRemoteAddr(),
-                LocalDateTime.now().format(formatter)));
-
-        return service.getEventById(id);
+                return service.getEventById(id, request);
     }
 }

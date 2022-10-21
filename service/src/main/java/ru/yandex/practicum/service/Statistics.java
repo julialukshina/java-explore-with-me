@@ -88,17 +88,23 @@ public class Statistics {
         String uri = "/events/" + dto.getId();
         List<String> uris = new ArrayList<>();
         uris.add(uri);
-        try {
-            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
-            if (response.getStatusCode() == HttpStatus.OK) {
-                List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
-                if (stats != null && stats.size() > 0) {
-                    dto.setViews(((Number) stats.get(0).get("hits")).longValue());
-                }
-            }
-        } catch (Exception ex) {
-            ex.getMessage();
+
+//        try {
+//            ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, false);
+//            if (response.getStatusCode() == HttpStatus.OK) {
+//                List<Map<String, Object>> stats = (List<Map<String, Object>>) response.getBody();
+//                if (stats != null && stats.size() > 0) {
+//                    dto.setViews(((Number) stats.get(0).get("hits")).longValue());
+//                }
+//            }
+//        } catch (Exception ex) {
+//            ex.getMessage();
+//        }
+        List<ViewStats> views = getViewStats(startStat, endStat, uris, unique);
+        if (!views.isEmpty()) {
+            dto.setViews(views.get(0).getHits());
         }
+
         return dto;
     }
 
@@ -135,7 +141,7 @@ public class Statistics {
         return eventDtos;
     }
 
-    private List<ViewStats> getViewStats(String startStat, String endStat, List<String> uris, boolean unique) {
+    public List<ViewStats> getViewStats(String startStat, String endStat, List<String> uris, boolean unique) {
         List<ViewStats> views = new ArrayList<>();
         try {
             ResponseEntity<Object> response = hitClient.getStats(startStat, endStat, uris, unique);
@@ -156,4 +162,5 @@ public class Statistics {
         }
         return views;
     }
+
 }

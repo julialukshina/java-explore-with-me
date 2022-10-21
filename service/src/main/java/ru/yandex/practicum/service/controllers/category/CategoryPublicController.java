@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.service.dto.categories.CategoryDto;
 import ru.yandex.practicum.service.services.categories.CategoryPublicService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
@@ -28,8 +29,8 @@ public class CategoryPublicController {
     }
 
     @GetMapping
-    public List<CategoryDto> getCategories(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
-                                           @RequestParam(name = "size", defaultValue = "10") @Positive int size) {
+    public List<CategoryDto> getCategories(@PositiveOrZero @RequestParam(name = "from", defaultValue = "0") int from,
+                                           @Positive @RequestParam(name = "size", defaultValue = "10") int size) {
         return service.getCategories(from, size);
     }
 

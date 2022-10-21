@@ -14,4 +14,6 @@ public interface ApplicationAdminService {
     void rejectApplication(Long appId);
 
     void approveApplication(Long appId);
+
+    List<ApplicationDto> getApplications(int from);
 }

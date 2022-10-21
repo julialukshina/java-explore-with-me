@@ -5,8 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.Statistics;
+import ru.yandex.practicum.service.clients.HitClient;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.EventShortDto;
+import ru.yandex.practicum.service.dto.statistics.EndpointHit;
 import ru.yandex.practicum.service.enums.Sort;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
 import ru.yandex.practicum.service.exeptions.TimeValidationException;
@@ -18,6 +20,7 @@ import ru.yandex.practicum.service.repositories.CategoryRepository;
 import ru.yandex.practicum.service.repositories.EventRepository;
 import ru.yandex.practicum.service.repositories.EventStorage;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,16 +40,19 @@ public class EventPublicServiceImpl implements EventPublicService {
     private final EventFullMapper eventFullMapper;
     @Lazy
     private final EventShortMapper eventShortMapper;
+    private final HitClient client;
+    private final String app = "service";
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, Statistics statistics, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper) {
+    public EventPublicServiceImpl(EventRepository repository, EventStorage storage, CategoryRepository categoryRepository, Statistics statistics, EventFullMapper eventFullMapper, EventShortMapper eventShortMapper, HitClient client) {
         this.repository = repository;
         this.storage = storage;
         this.categoryRepository = categoryRepository;
         this.statistics = statistics;
         this.eventFullMapper = eventFullMapper;
         this.eventShortMapper = eventShortMapper;
+        this.client = client;
     }
 
     /**
@@ -66,7 +72,7 @@ public class EventPublicServiceImpl implements EventPublicService {
     @Override
     @Transactional
     public List<EventShortDto> getEvents(String text, List<Integer> categories, Boolean paid, String rangeStart,
-                                         String rangeEnd, boolean isAvailable, Sort sort, int from, int size) {
+                                         String rangeEnd, boolean isAvailable, Sort sort, int from, int size, HttpServletRequest request) {
         LocalDateTime start = null;
         LocalDateTime end = null;
         if (rangeStart != null) {
@@ -163,6 +169,11 @@ public class EventPublicServiceImpl implements EventPublicService {
                 }
             }
         }
+        client.createHit(new EndpointHit(0,
+                request.getRequestURI(),
+                app,
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(formatter)));
         log.info("Выдан список событий для незарегистрированного пользователя");
         return events.stream()
                 .map(eventShortMapper::toEventShortDto)
@@ -176,13 +187,18 @@ public class EventPublicServiceImpl implements EventPublicService {
      * @return EventFullDto
      */
     @Override
-    public EventFullDto getEventById(Long id) {
+    public EventFullDto getEventById(Long id, HttpServletRequest request) {
         eventValidation(id);
         System.out.println(repository.findById(id));
         EventFullDto dto = eventFullMapper.toEventFullDto(repository.findById(id).get());
         if (!dto.getState().equals("PUBLISHED")) {
             throw new ValidationException("Только опубликованные события могут быть просмотрены");
         }
+        client.createHit(new EndpointHit(0,
+                request.getRequestURI(),
+                app,
+                request.getRemoteAddr(),
+                LocalDateTime.now().format(formatter)));
         log.info("Выдача события по id={} для незарегистрированного пользователя", id);
         return statistics.getEventFullDtoWithViews(dto);
     }

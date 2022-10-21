@@ -1,5 +1,6 @@
 package ru.yandex.practicum.service.services.questions;
 
+import ru.yandex.practicum.service.dto.questions.NewAnswerDto;
 import ru.yandex.practicum.service.dto.questions.NewQuestionDto;
 import ru.yandex.practicum.service.dto.questions.QuestionDto;
 
@@ -10,7 +11,7 @@ public interface QuestionPrivateService {
 
     QuestionDto addQuestion(Long userId, Long eventId, NewQuestionDto dto);
 
-    QuestionDto updateQuestion(Long userId, Long eventId, Long questId, String answer);
+    QuestionDto updateQuestion(Long userId, Long eventId, Long questId, NewAnswerDto dto);
 
     void deleteQuestion(Long userId, Long eventId, Long questId);
 }

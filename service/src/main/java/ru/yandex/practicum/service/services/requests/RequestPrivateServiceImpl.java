@@ -98,6 +98,7 @@ public class RequestPrivateServiceImpl implements RequestPrivateService {
      */
     @Override
     public ParticipationRequestDto cancelRequest(Long userId, Long requestId) {
+        userValidation(userId);
         requestValidation(requestId);
         Request request = requestRepository.findById(requestId).get();
 

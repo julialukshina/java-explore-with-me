@@ -50,7 +50,7 @@ public class ApplicationAdminServiceImpl implements ApplicationAdminService {
     /**
      * Администратору предоставлен список обращений, отсортированных по их статусу и по дате их создания
      *
-     * @param appStatus AppStatu
+     * @param appStatus AppStatus
      * @param from      int
      * @return List<ApplicationDto>
      */
@@ -94,6 +94,21 @@ public class ApplicationAdminServiceImpl implements ApplicationAdminService {
         application.setAppStatus(AppStatus.APPROVED);
         applicationRepository.save(application);
         log.info("Обращение с id={} одобрено", appId);
+    }
+
+    /**
+     * Выдача списка всех обращений администратору
+     * @param from int
+     * @return List<ApplicationDto>
+     */
+    @Override
+    public List<ApplicationDto> getApplications(int from) {
+        Pageable pageable = PageRequest.of(from, SIZE);
+        List<ApplicationDto> dtos = applicationRepository.findAll(pageable).stream()
+                .map(ApplicationMapper::toApplicationDto)
+                .collect(Collectors.toList());
+        log.info("Администратору предоставлен список всех обращений, причина которых");
+        return dtos;
     }
 
     /**

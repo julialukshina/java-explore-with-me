@@ -22,10 +22,6 @@ public class CompilationDto {
     @Positive
     private long id;
     private List<EventShortDto> events;
-    @NotNull
-    @NotBlank
     private boolean pinned;
-    @NotNull
-    @NotBlank
     private String title;
 }

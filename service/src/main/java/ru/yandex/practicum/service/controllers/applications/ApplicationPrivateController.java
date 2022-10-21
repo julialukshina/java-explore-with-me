@@ -15,6 +15,7 @@ import ru.yandex.practicum.service.dto.applications.ApplicationDto;
 import ru.yandex.practicum.service.dto.applications.NewApplicationDto;
 import ru.yandex.practicum.service.services.applications.ApplicationPrivateService;
 
+import javax.validation.Valid;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -31,12 +32,12 @@ public class ApplicationPrivateController {
     }
 
     @PostMapping
-    public ApplicationDto addApplication(@PathVariable Long userId, @RequestBody NewApplicationDto dto) {
+    public ApplicationDto addApplication(@PathVariable Long userId, @RequestBody @Valid NewApplicationDto dto) {
         return service.addApplication(userId, dto);
     }
 
     @GetMapping
-    public List<ApplicationDto> getComments(@PathVariable Long userId,
+    public List<ApplicationDto> getApplications(@PathVariable Long userId,
                                             @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from) {
         return service.getApplications(userId, from);
     }

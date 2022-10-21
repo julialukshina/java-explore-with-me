@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class Application {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

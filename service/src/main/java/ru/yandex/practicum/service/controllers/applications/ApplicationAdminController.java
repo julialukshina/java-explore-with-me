@@ -40,21 +40,33 @@ public class ApplicationAdminController {
         this.statusConverter = statusConverter;
     }
 
-    @GetMapping("/{reason}")
+    @GetMapping
+    public List<ApplicationDto> getApplications(@RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from) {
+        return service.getApplications(from);
+    }
+    @GetMapping("/reason/{reason}")
     public List<ApplicationDto> getApplicationsByReason(@PathVariable String reason,
                                                         @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from) {
         AppReason appReason = reasonConverter.convert(reason);
-        if (appReason.equals(AppReason.UNSUPPORTED_REASON)) {
+        if(appReason==null){
+            throw new ValidationException("В данный метод для поиска должна быть передана причина обращения");
+        }
+        if (AppReason.UNSUPPORTED_REASON.equals(appReason)) {
             throw new ValidationException(String.format("Обращений с причиной '%s' не существует", reason));
         }
         return service.getApplicationsByReason(appReason, from);
     }
 
-    @GetMapping("/{status}")
+    @GetMapping("/status/{status}")
     public List<ApplicationDto> getApplicationsByStatus(@PathVariable String status,
                                                         @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from) {
+        System.out.println(status);
         AppStatus appStatus = statusConverter.convert(status);
-        if (appStatus.equals(AppStatus.UNSUPPORTED_STATUS)) {
+        System.out.println(appStatus);
+        if(appStatus==null){
+            throw new ValidationException("В данный метод для поиска должен быть передан статус обращения");
+        }
+        if (AppStatus.UNSUPPORTED_STATUS.equals(appStatus)) {
             throw new ValidationException(String.format("Обращений со статусом '%s' не существует", status));
         }
         return service.getApplicationsByStatus(appStatus, from);

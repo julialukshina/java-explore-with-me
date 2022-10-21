@@ -1,11 +1,13 @@
 package ru.yandex.practicum.service.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.service.enums.Status;
 import ru.yandex.practicum.service.models.Request;
 
 import java.util.List;
 
+@Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
     List<Request> findByEventId(Long eventId);
 

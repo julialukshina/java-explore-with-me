@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.service.dto.comments.CommentDto;
-import ru.yandex.practicum.service.dto.comments.NewCommentDto;
+import ru.yandex.practicum.service.dto.comments.InputCommentDto;
 import ru.yandex.practicum.service.services.comments.CommentPrivateService;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.Valid;
 import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
@@ -42,7 +42,7 @@ public class CommentPrivateController {
     @PostMapping
     public CommentDto addComment(@PathVariable Long userId,
                                  @PathVariable Long eventId,
-                                 @RequestBody NewCommentDto dto) {
+                                 @RequestBody @Valid InputCommentDto dto) {
         return service.addComment(userId, eventId, dto);
     }
 
@@ -50,8 +50,9 @@ public class CommentPrivateController {
     public CommentDto updateComment(@PathVariable Long userId,
                                     @PathVariable Long eventId,
                                     @PathVariable Long commId,
-                                    @RequestBody @NotBlank String text) {
-        return service.updateComment(userId, eventId, commId, text);
+                                    @RequestBody @Valid InputCommentDto dto) {
+
+        return service.updateComment(userId, eventId, commId, dto);
     }
 
     @DeleteMapping("/{commId}")
