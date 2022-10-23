@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.service.Statistics;
+import ru.yandex.practicum.service.dto.events.AdminUpdateEventRequest;
 import ru.yandex.practicum.service.dto.events.EventFullDto;
 import ru.yandex.practicum.service.dto.events.UpdateEventRequest;
 import ru.yandex.practicum.service.enums.State;
@@ -25,6 +26,7 @@ import ru.yandex.practicum.service.repositories.UserRepository;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @Service
@@ -75,43 +77,43 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (rangeStart != null) {
             try {
                 start = LocalDateTime.parse(rangeStart, formatter);
-            } catch (TimeValidationException e) {
+            } catch (DateTimeParseException e) {
                 throw new TimeValidationException("Передано некорректное значение для параметра поиска start");
             }
         }
         if (rangeEnd != null) {
             try {
                 end = LocalDateTime.parse(rangeEnd, formatter);
-            } catch (TimeValidationException e) {
+            } catch (DateTimeParseException e) {
                 throw new TimeValidationException("Передано некорректное значение для параметра поиска end");
             }
         }
         StringBuilder sb = new StringBuilder();
         sb.append("SELECT * FROM Events WHERE ");
-        if (users.size() > 0) {
-            userValidation(Long.valueOf(users.get(0)));
-            StringBuilder builder = new StringBuilder();
-            builder.append(users.get(0));
-            if (users.size() > 1) {
-                for (int i = 1; i < categories.size(); i++) {
-                    userValidation(Long.valueOf(users.get(i)));
-                    builder.append(", ").append(users.get(i));
-                }
+        if(users != null){
+                userValidation(Long.valueOf(users.get(0)));
+                StringBuilder builder = new StringBuilder();
+                builder.append(users.get(0));
+                if (users.size() > 1) {
+                    for (int i = 1; i < users.size(); i++) {
+                        userValidation(Long.valueOf(users.get(i)));
+                        builder.append(", ").append(users.get(i));
+                    }
+                sb.append("initiator_id IN (").append(builder).append(") ");
             }
-            sb.append("initiator_id IN (").append(builder).append(") ");
         }
 
-        if (categories.size() > 0) {
-            categoryValidation(Long.valueOf(categories.get(0)));
-            StringBuilder builder = new StringBuilder();
-            builder.append(categories.get(0));
-            if (categories.size() > 1) {
-                for (int i = 1; i < categories.size(); i++) {
-                    categoryValidation(Long.valueOf(categories.get(i)));
-                    builder.append(", ").append(categories.get(i));
+        if (categories != null) {
+                categoryValidation(Long.valueOf(categories.get(0)));
+                StringBuilder builder = new StringBuilder();
+                builder.append(categories.get(0));
+                if (categories.size() > 1) {
+                    for (int i = 1; i < categories.size(); i++) {
+                        categoryValidation(Long.valueOf(categories.get(i)));
+                        builder.append(", ").append(categories.get(i));
+                    }
                 }
-            }
-            sb.append("AND category_id IN (").append(builder).append(") ");
+                sb.append("AND category_id IN (").append(builder).append(") ");
         }
 
         if (start != null || end == null) {
@@ -123,18 +125,19 @@ public class EventAdminServiceImpl implements EventAdminService {
         if (end != null) {
             sb.append(String.format("AND event_date<='%s' ", end));
         }
-        if (states.size() > 0) {
-            stateValidation(states.get(0));
-            StringBuilder builder = new StringBuilder();
-            builder.append("'").append(states.get(0)).append("'");
-            if (states.size() > 1) {
-                for (int i = 1; i < states.size(); i++) {
-                    stateValidation(states.get(i));
-                    builder.append("OR state LIKE '").append(states.get(i)).append("'");
+        if (states != null) {
+                stateValidation(states.get(0));
+                StringBuilder builder = new StringBuilder();
+                builder.append("'").append(states.get(0)).append("'");
+                if (states.size() > 1) {
+                    for (int i = 1; i < states.size(); i++) {
+                        stateValidation(states.get(i));
+                        builder.append("OR state LIKE '").append(states.get(i)).append("'");
+                    }
                 }
-            }
-            sb.append("AND state LIKE ").append(builder).append(" ");
+                sb.append("AND state LIKE ").append(builder).append(" ");
         }
+
 
         if (sb.toString().contains("WHERE AND")) {
             int i = sb.indexOf("AND");
@@ -156,13 +159,13 @@ public class EventAdminServiceImpl implements EventAdminService {
      */
     @Override
     @Transactional
-    public EventFullDto updateEvent(Long eventId, UpdateEventRequest updateEventRequest) {
+    public EventFullDto updateEvent(Long eventId, AdminUpdateEventRequest updateEventRequest) {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (updateEventRequest.getAnnotation() != null) {
             event.setAnnotation(updateEventRequest.getAnnotation());
         }
-        if (updateEventRequest.getCategory() != 0) {
+        if (updateEventRequest.getCategory() != null) {
             event.setCategory(categoryRepository.findById(updateEventRequest.getCategory()).get());
         }
 
@@ -177,11 +180,11 @@ public class EventAdminServiceImpl implements EventAdminService {
         }
         if (updateEventRequest.getParticipantLimit() != null) {
             event.setParticipantLimit(updateEventRequest.getParticipantLimit());
-
+        }
             if (updateEventRequest.getRequestModeration() != null) {
                 event.setRequestModeration(updateEventRequest.getRequestModeration());
             }
-        }
+
         if (updateEventRequest.getTitle() != null) {
             event.setTitle(updateEventRequest.getTitle());
         }
@@ -200,34 +203,6 @@ public class EventAdminServiceImpl implements EventAdminService {
     @Override
     @Transactional
     public EventFullDto publishEvent(Long eventId) {
-
-        // TODO: 20.10.2022 убери после защиты - временная мера для проверки комментариев
-
-        Category category = new Category(1L, "category");
-        User user = new User(1L, "user", "user@user.com");
-        Event event1 = Event.builder()
-                .id(2L)
-                .annotation("Спектакль МХАТа")
-                .category(category)
-                .createdOn(LocalDateTime.now().minusDays(3L))
-                .description("Спектакль МХАТа")
-                .eventDate(LocalDateTime.now().minusDays(1L))
-                .initiator(user)
-                .lat(54.1838F)
-                .lon(45.1749F)
-                .paid(true)
-                .participantLimit(1L)
-                .publishedOn(LocalDateTime.now().minusDays(2L))
-                .requestModeration(false)
-                .title("Спектакль")
-                .state(State.PUBLISHED)
-                .commentModeration(true)
-                .build();
-        eventRepository.save(event1);
-
-
-
-
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         if (!event.getState().equals(State.PENDING)) {

@@ -53,7 +53,6 @@ public class StatisticsServiceImpl implements StatisticsService {
         LocalDateTime endStat;
         String app = "service";
         List<ViewStats> views = new ArrayList<>();
-        ViewStats viewStats = new ViewStats(null, null, 0);
         if (uris.isEmpty()) {
             throw new ValidationException("Uris для подсчета статистики не переданы");
         }
@@ -66,6 +65,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         if (unique) {
             for (String uri :
                     uris) {
+                ViewStats viewStats = new ViewStats(null, null, 0);
                 viewStats.setUri(uri);
                 viewStats.setApp(app);
                 viewStats.setHits(repository.getUniqueStatistics(startStat, endStat, uri));
@@ -74,6 +74,7 @@ public class StatisticsServiceImpl implements StatisticsService {
         } else {
             for (String uri :
                     uris) {
+                ViewStats viewStats = new ViewStats(null, null, 0);
                 viewStats.setUri(uri);
                 viewStats.setApp(app);
                 viewStats.setHits(repository.getStatistics(startStat, endStat, uri));

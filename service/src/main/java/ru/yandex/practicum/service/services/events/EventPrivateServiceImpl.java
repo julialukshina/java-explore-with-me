@@ -82,8 +82,10 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     public EventFullDto updateEvent(Long userId, UpdateEventRequest updateEventRequest) {
         userValidation(userId);
         eventValidation(updateEventRequest.getEventId());
-        if (LocalDateTime.parse(updateEventRequest.getEventDate(), formatter).isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ValidationException("Изменение события доступно не менее, чем за два часа до его наступления");
+        if(updateEventRequest.getEventDate() !=null){
+            if (LocalDateTime.parse(updateEventRequest.getEventDate(), formatter).isBefore(LocalDateTime.now().plusHours(2))) {
+                throw new ValidationException("Изменение события доступно не менее, чем за два часа до его наступления");
+            }
         }
 
         Event event = eventRepository.findById(updateEventRequest.getEventId()).get();
@@ -93,13 +95,15 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         }
 
         if (updateEventRequest.getAnnotation() != null) {
+            stringValidation(updateEventRequest.getAnnotation());
             event.setAnnotation(updateEventRequest.getAnnotation());
         }
-        if (updateEventRequest.getCategory() != 0) {
+        if (updateEventRequest.getCategory() != null) {
             categoryValidation(updateEventRequest.getCategory());
             event.setCategory(categoryRepository.findById(updateEventRequest.getCategory()).get());
         }
         if (updateEventRequest.getDescription() != null) {
+            stringValidation(updateEventRequest.getDescription());
             event.setDescription(updateEventRequest.getDescription());
         }
         if (updateEventRequest.getEventDate() != null) {
@@ -121,6 +125,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         }
 
         if (updateEventRequest.getTitle() != null) {
+            stringValidation(updateEventRequest.getTitle());
             event.setTitle(updateEventRequest.getTitle());
         }
         if (event.getState().equals(State.CANCELED)) {
@@ -161,6 +166,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
     @Transactional
     public EventFullDto postEvent(Long userId, NewEventDto dto) {
         userValidation(userId);
+        categoryValidation(dto.getCategory());
         LocalDateTime now = LocalDateTime.now();
         if (LocalDateTime.parse(dto.getEventDate(), formatter).isBefore(now.plusHours(2))) {
             throw new ValidationException("Событие может быть опубликовано не менее, чем за два часа до его наступления");
@@ -200,7 +206,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         eventValidation(eventId);
         Event event = eventRepository.findById(eventId).get();
         initiatorValidation(userId, event.getInitiator().getId());
-        if (!event.getState().equals(State.PENDING)) {
+        if (!State.PENDING.equals(event.getState())) {
             throw new ValidationException("Только ожидающее модерации событие может быть отменено");
         }
         event.setState(State.CANCELED);
@@ -274,6 +280,7 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         userValidation(userId);
         eventValidation(eventId);
         initiatorValidationWithEventId(userId, eventId);
+        requestValidation(reqId);
         eventAndInitiatorRequestValidation(reqId, eventId, userId);
         Request request = requestRepository.findById(reqId).get();
         request.setStatus(Status.REJECTED);
@@ -351,6 +358,16 @@ public class EventPrivateServiceImpl implements EventPrivateService {
         }
     }
 
+    /**
+     * Проверка строчных значений
+     *
+     * @param s String
+     */
+    private void stringValidation(String s) {
+        if (s.isBlank()) {
+            throw new ValidationException("Аннотация, описание и заголовок не могут быть пустыми");
+        }
+    }
     /**
      * Проверка наличия запроса на участие в событии в базе по id, а также является ли пользователь создателем события
      *

@@ -25,7 +25,12 @@
 	<module>service</module>
 	<module>statistics</module>
 </modules>
-
+	<dependencies>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+		</dependency>
+	</dependencies>
 	<build>
 		<pluginManagement>
 			<plugins>

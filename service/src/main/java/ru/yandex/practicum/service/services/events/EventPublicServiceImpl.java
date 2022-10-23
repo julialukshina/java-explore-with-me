@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,17 +76,27 @@ public class EventPublicServiceImpl implements EventPublicService {
                                          String rangeEnd, boolean isAvailable, Sort sort, int from, int size, HttpServletRequest request) {
         LocalDateTime start = null;
         LocalDateTime end = null;
+        System.out.println("\n");
+        System.out.println("\n");
+        System.out.println("Мы здесь");
+        System.out.println("\n");
+        System.out.println("\n");
         if (rangeStart != null) {
             try {
                 start = LocalDateTime.parse(rangeStart, formatter);
-            } catch (TimeValidationException e) {
+            } catch (DateTimeParseException e) {
+                System.out.println("\n");
+                System.out.println("\n");
+                System.out.println("А теперь здесь");
+                System.out.println("\n");
+                System.out.println("\n");
                 throw new TimeValidationException("Передано некорректное значение для параметра поиска start");
             }
         }
         if (rangeEnd != null) {
             try {
                 end = LocalDateTime.parse(rangeEnd, formatter);
-            } catch (TimeValidationException e) {
+            } catch (DateTimeParseException e) {
                 throw new TimeValidationException("Передано некорректное значение для параметра поиска end");
             }
         }
@@ -94,7 +105,7 @@ public class EventPublicServiceImpl implements EventPublicService {
         if (text != null) {
             sb.append(String.format("(annotation ilike '%%%s%%' or description ilike '%%%s%%') ", text, text));
         }
-        if (categories.size() > 0) {
+        if (categories != null) {
             StringBuilder builder = new StringBuilder();
             categoryValidation(Long.valueOf(categories.get(0)));
             builder.append(categories.get(0));
@@ -119,9 +130,11 @@ public class EventPublicServiceImpl implements EventPublicService {
             sb.append(String.format("AND event_date<='%s' ", end));
         }
 
-        if (sort.equals(Sort.EVENT_DATE)) {
-            sb.append("ORDER BY event_date ");
+        if (Sort.EVENT_DATE.equals(sort)) {
+        sb.append("ORDER BY event_date ");
         }
+
+
         if (sb.toString().contains("WHERE AND")) {
             int i = sb.indexOf("AND");
             sb.delete(i, i + 3);

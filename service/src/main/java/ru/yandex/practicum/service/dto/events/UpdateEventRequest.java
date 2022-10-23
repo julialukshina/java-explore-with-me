@@ -1,10 +1,6 @@
 package ru.yandex.practicum.service.dto.events;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
@@ -14,12 +10,13 @@ import javax.validation.constraints.Positive;
 @ToString
 @EqualsAndHashCode
 @AllArgsConstructor
+@Builder
 public class UpdateEventRequest {
     @NotNull
     @Positive
     private long eventId;
     private String annotation;
-    private long category;
+    private Long category;
     private String description;
     private String eventDate;
     private Boolean paid;

@@ -3,6 +3,7 @@ package ru.yandex.practicum.service.dto.events;
 import lombok.*;
 import ru.yandex.practicum.service.dto.locations.Location;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +17,7 @@ public class NewEventDto {
     @NotNull
     @NotBlank
     private String annotation;
-    @NotNull
+    @Min(value=1)
     private long category;
     @NotNull
     @NotBlank
