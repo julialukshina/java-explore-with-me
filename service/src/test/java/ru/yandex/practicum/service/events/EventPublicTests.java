@@ -168,7 +168,7 @@ public class EventPublicTests {
         this.mockMvc.perform(get("/events?sort=FALSE"))
                 .andExpect(status().isInternalServerError());
         this.mockMvc.perform(get("/events?rangeStart=10.15.2015"))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
 
         List<ViewStats> views = new ArrayList<>();
         ViewStats viewStat1 = new ViewStats("/events/1", "service", 1L);

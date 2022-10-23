@@ -11,6 +11,7 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import ru.yandex.practicum.service.exeptions.ConflictException;
 import ru.yandex.practicum.service.exeptions.NotFoundException;
+import ru.yandex.practicum.service.exeptions.TimeValidationException;
 import ru.yandex.practicum.service.exeptions.ValidationException;
 
 import java.time.LocalDateTime;
@@ -50,6 +51,21 @@ public class ServiceExceptionHandler{
         apiError.setTimestamp(LocalDateTime.now().format(formatter));
         return new ResponseEntity<>(apiError, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(TimeValidationException.class)
+    public ResponseEntity<ApiError> handleTimeValidationException(TimeValidationException e) {
+        log.error(e.getMessage());
+        ApiError apiError = new ApiError();
+        apiError.setMessage(e.getMessage());
+        apiError.setReason("Некорректные данные времени");
+        apiError.setStatus("BAD_REQUEST");
+        Arrays.stream(e.getStackTrace())
+                .map(StackTraceElement::toString)
+                .forEach(apiError.getErrors()::add);
+        apiError.setTimestamp(LocalDateTime.now().format(formatter));
+        return new ResponseEntity<>(apiError, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFoundException(NotFoundException e) {
         log.error(e.getMessage());
